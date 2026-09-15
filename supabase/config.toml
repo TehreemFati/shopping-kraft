@@ -1,0 +1,11 @@
+# Supabase CLI config - run `supabase init` locally to generate full config
+# Migrations are in supabase/migrations/
+
+[project]
+id = "shopping-kraft"
+
+[api]
+enabled = true
+
+[db]
+major_version = 15

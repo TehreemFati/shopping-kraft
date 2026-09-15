@@ -1,0 +1,112 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
+export type NavCampaign = {
+  id: string;
+  name: string;
+  slug: string;
+  sale_type: string;
+};
+
+export type NavCategory = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mt-5 mb-1 px-3 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase first:mt-0">
+      {children}
+    </p>
+  );
+}
+
+export function StoreNav({
+  categories,
+  campaigns,
+}: {
+  categories: NavCategory[];
+  campaigns: NavCampaign[];
+}) {
+  const [open, setOpen] = useState(false);
+
+  function NavLink({
+    href,
+    children,
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) {
+    return (
+      <Link
+        href={href}
+        onClick={() => setOpen(false)}
+        className="block rounded-md px-3 py-2 text-sm font-medium text-kraft-ink transition hover:bg-muted"
+      >
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        render={
+          <button
+            type="button"
+            aria-label="Open menu"
+            className="flex size-10 items-center justify-center text-white/90 transition hover:bg-white/10 hover:text-white"
+          />
+        }
+      >
+        <Menu className="size-5" />
+      </SheetTrigger>
+      <SheetContent side="right" className="w-[min(100%,20rem)] gap-0 p-0">
+        <SheetHeader className="border-b border-border px-4 py-4 text-left">
+          <SheetTitle className="font-display text-xl text-kraft-ink">
+            Menu
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex-1 overflow-y-auto px-2 py-4">
+          <SectionLabel>Browse</SectionLabel>
+          <NavLink href="/shop">Full catalog</NavLink>
+          <NavLink href="/shop?featured=1">Featured</NavLink>
+          <NavLink href="/shop?sort=newest">New arrivals</NavLink>
+
+          <SectionLabel>Sales</SectionLabel>
+          <NavLink href="/shop?on_sale=1">On Sale</NavLink>
+          {campaigns.map((c) => (
+            <NavLink key={c.id} href={`/sale/${c.slug}`}>
+              {c.name}
+              <span className="ml-2 text-[10px] tracking-wide text-muted-foreground uppercase">
+                {c.sale_type}
+              </span>
+            </NavLink>
+          ))}
+
+          {categories.length > 0 ? (
+            <>
+              <SectionLabel>Categories</SectionLabel>
+              {categories.map((cat) => (
+                <NavLink key={cat.id} href={`/category/${cat.slug}`}>
+                  {cat.name}
+                </NavLink>
+              ))}
+            </>
+          ) : null}
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+}
