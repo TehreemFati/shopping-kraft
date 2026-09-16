@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Category } from "@/types/database";
 import { HorizontalSlider } from "@/components/storefront/SectionSlider";
 
 const TINTS = [
@@ -11,7 +10,19 @@ const TINTS = [
   "from-yellow-900/70 to-stone-950/50",
 ];
 
-export function CategorySlider({ categories }: { categories: Category[] }) {
+type SliderCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  image_url?: string | null;
+  description?: string | null;
+};
+
+export function CategorySlider({
+  categories,
+}: {
+  categories: SliderCategory[];
+}) {
   if (categories.length === 0) return null;
 
   return (

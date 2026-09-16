@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,19 +28,21 @@ export function PageBreadcrumbs({
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
-            <BreadcrumbItem key={`${item.label}-${index}`}>
+            <Fragment key={`${item.label}-${index}`}>
               {index > 0 ? <BreadcrumbSeparator /> : null}
-              {isLast || !item.href ? (
-                <BreadcrumbPage>{item.label}</BreadcrumbPage>
-              ) : (
-                <Link
-                  href={item.href}
-                  className="transition-colors hover:text-kraft-ink"
-                >
-                  {item.label}
-                </Link>
-              )}
-            </BreadcrumbItem>
+              <BreadcrumbItem>
+                {isLast || !item.href ? (
+                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="transition-colors hover:text-kraft-ink"
+                  >
+                    {item.label}
+                  </Link>
+                )}
+              </BreadcrumbItem>
+            </Fragment>
           );
         })}
       </BreadcrumbList>

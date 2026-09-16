@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Banner } from "@/types/database";
+import { WHATSAPP_CUSTOMIZE_URL } from "@/lib/storefront/home-links";
 
 export function BannerHero({ banners }: { banners: Banner[] }) {
   const slides =
@@ -13,8 +14,9 @@ export function BannerHero({ banners }: { banners: Banner[] }) {
       : [
           {
             id: "fallback",
-            title: "Made to be found",
-            subtitle: "Curated products with fast delivery across Pakistan.",
+            title: "Make Every Moment Special",
+            subtitle:
+              "Curated gift boxes, baskets, and custom presents delivered across Pakistan.",
             image_url: "",
             link_url: "/shop",
             sort_order: 0,
@@ -42,54 +44,64 @@ export function BannerHero({ banners }: { banners: Banner[] }) {
     setIndex((i) => (i + dir + slides.length) % slides.length);
   }
 
-  const href = current.link_url || "/shop";
+  const shopHref = current.link_url || "/shop";
+  const headline = "Make Every Moment Special";
+  const support =
+    current.subtitle ||
+    "Curated gift boxes, baskets, and custom presents delivered across Pakistan.";
 
   return (
-    <section className="relative min-h-[78vh] overflow-hidden bg-kraft-ink text-primary-foreground">
+    <section className="relative min-h-[min(92vh,52rem)] overflow-hidden bg-kraft-ink text-primary-foreground">
       {current.image_url ? (
         <Image
           key={current.id}
           src={current.image_url}
-          alt={current.title}
+          alt={headline}
           fill
           priority
           className="animate-ken object-cover"
           sizes="100vw"
         />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,oklch(0.45_0.06_50),transparent_55%),linear-gradient(135deg,oklch(0.26_0.04_50),oklch(0.34_0.05_55))] kraft-grain" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_28%_18%,oklch(0.42_0.055_50),transparent_55%),radial-gradient(ellipse_at_90%_80%,oklch(0.55_0.08_55_/0.35),transparent_50%),linear-gradient(145deg,oklch(0.24_0.04_50),oklch(0.33_0.05_55))] kraft-grain" />
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-r from-kraft-ink/90 via-kraft-ink/55 to-kraft-ink/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-kraft-ink/92 via-kraft-ink/60 to-kraft-ink/25" />
 
-      <div className="relative z-10 mx-auto flex min-h-[78vh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:px-6 lg:justify-center lg:pb-24">
+      <div className="relative z-10 mx-auto flex min-h-[min(92vh,52rem)] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:px-6 lg:justify-center lg:pb-24">
         <p className="animate-fade-up font-display text-4xl tracking-tight text-kraft-citrus sm:text-5xl md:text-7xl">
           Shopping Kraft
         </p>
         <h1
-          className="animate-fade-up mt-4 max-w-xl font-display text-2xl leading-tight text-white sm:text-3xl md:text-4xl"
+          className="animate-fade-up mt-4 max-w-2xl font-display text-2xl leading-tight text-white sm:text-3xl md:text-5xl"
           style={{ animationDelay: "80ms" }}
         >
-          {current.title}
+          {headline}
         </h1>
-        {current.subtitle ? (
-          <p
-            className="animate-fade-up mt-3 max-w-md text-base text-white/80 sm:text-lg"
-            style={{ animationDelay: "140ms" }}
-          >
-            {current.subtitle}
-          </p>
-        ) : null}
+        <p
+          className="animate-fade-up mt-3 max-w-md text-base text-white/80 sm:text-lg"
+          style={{ animationDelay: "140ms" }}
+        >
+          {support}
+        </p>
         <div
-          className="animate-fade-up mt-8"
+          className="animate-fade-up mt-8 flex flex-wrap gap-3"
           style={{ animationDelay: "200ms" }}
         >
           <Link
-            href={href}
+            href={shopHref}
             className="inline-flex items-center bg-kraft-citrus px-6 py-3 text-sm font-semibold tracking-wide text-kraft-ink transition hover:brightness-105"
           >
-            Explore collection
+            Shop Now
           </Link>
+          <a
+            href={WHATSAPP_CUSTOMIZE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center border border-white/40 px-6 py-3 text-sm font-semibold tracking-wide text-white transition hover:border-white hover:bg-white/10"
+          >
+            Customize Gift
+          </a>
         </div>
       </div>
 

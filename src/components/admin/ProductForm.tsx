@@ -108,11 +108,31 @@ export function ProductForm({ categories, product }: ProductFormProps) {
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
+                {[...categories]
+                  .sort((a, b) => {
+                    const aParent = a.parent_id ?? "";
+                    const bParent = b.parent_id ?? "";
+                    if (!a.parent_id && b.parent_id) return -1;
+                    if (a.parent_id && !b.parent_id) return 1;
+                    if (aParent !== bParent) return aParent.localeCompare(bParent);
+                    return (
+                      a.sort_order - b.sort_order ||
+                      a.name.localeCompare(b.name)
+                    );
+                  })
+                  .map((cat) => {
+                  const parent = cat.parent_id
+                    ? categories.find((c) => c.id === cat.parent_id)
+                    : null;
+                  const label = parent
+                    ? `${parent.name} › ${cat.name}`
+                    : cat.name;
+                  return (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {label}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
             <FieldError message={errors.category_id} />

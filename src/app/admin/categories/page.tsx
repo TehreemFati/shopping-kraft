@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { listAdminCategories } from "@/lib/actions/categories";
+import {
+  getAdminCategories,
+  listAdminCategories,
+} from "@/lib/actions/categories";
 import { CategoriesTable } from "@/components/admin/CategoriesTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
@@ -24,7 +27,10 @@ export default async function AdminCategoriesPage({
   const page = parsePage(sp.page);
   const pageSize = parsePageSize(sp.pageSize);
 
-  const result = await listAdminCategories({ q, status, page, pageSize });
+  const [result, allCategories] = await Promise.all([
+    listAdminCategories({ q, status, page, pageSize }),
+    getAdminCategories(),
+  ]);
   const query = {
     q: q || undefined,
     status: status !== "all" ? status : undefined,
@@ -32,9 +38,9 @@ export default async function AdminCategoriesPage({
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Categories</h1>
-        <Button asChild>
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold sm:text-3xl">Categories</h1>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/admin/categories/new">Add Category</Link>
         </Button>
       </div>
@@ -64,7 +70,10 @@ export default async function AdminCategoriesPage({
         <p className="text-muted-foreground">No categories found.</p>
       ) : (
         <>
-          <CategoriesTable categories={result.data} />
+          <CategoriesTable
+            categories={result.data}
+            allCategories={allCategories}
+          />
           <AdminPagination
             page={result.page}
             totalPages={result.totalPages}

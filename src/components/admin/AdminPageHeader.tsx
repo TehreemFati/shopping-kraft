@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Fragment } from "react";
 import Link from "next/link";
 import {
   Breadcrumb,
@@ -31,26 +32,28 @@ export function AdminPageHeader({
           {crumbs.map((item, index) => {
             const isLast = index === crumbs.length - 1;
             return (
-              <BreadcrumbItem key={`${item.label}-${index}`}>
+              <Fragment key={`${item.label}-${index}`}>
                 {index > 0 ? <BreadcrumbSeparator /> : null}
-                {isLast || !item.href ? (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className="transition-colors hover:text-foreground"
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </BreadcrumbItem>
+                <BreadcrumbItem>
+                  {isLast || !item.href ? (
+                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="transition-colors hover:text-foreground"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </BreadcrumbItem>
+              </Fragment>
             );
           })}
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl tracking-tight text-kraft-ink">
+          <h1 className="font-display text-2xl tracking-tight text-kraft-ink sm:text-3xl">
             {title}
           </h1>
           {description ? (

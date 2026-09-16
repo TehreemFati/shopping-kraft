@@ -23,7 +23,7 @@ export default async function CartPage() {
           { label: "Cart" },
         ]}
       />
-      <h1 className="mb-8 text-3xl font-bold">Shopping Cart</h1>
+      <h1 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl">Shopping Cart</h1>
       <CartItems items={items} />
     </div>
   );

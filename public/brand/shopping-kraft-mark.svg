@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Shopping Kraft">
+  <defs>
+    <linearGradient id="sk-ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F7F5F2"/>
+      <stop offset="100%" stop-color="#EDE8E2"/>
+    </linearGradient>
+    <linearGradient id="sk-peach" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F3C9A8"/>
+      <stop offset="100%" stop-color="#E8A87A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Circle ground -->
+  <circle cx="128" cy="128" r="124" fill="url(#sk-ground)"/>
+  <circle cx="128" cy="128" r="124" fill="none" stroke="#D9D0C6" stroke-width="2"/>
+
+  <!-- Balloons -->
+  <g>
+    <ellipse cx="92" cy="70" rx="18" ry="22" fill="#F0B8C4"/>
+    <ellipse cx="118" cy="58" rx="17" ry="21" fill="#7BA3C9"/>
+    <ellipse cx="144" cy="66" rx="16" ry="20" fill="url(#sk-peach)"/>
+    <ellipse cx="166" cy="78" rx="14" ry="18" fill="#F2C9A0"/>
+    <!-- strings -->
+    <path d="M92 92 C96 108 108 118 120 128" fill="none" stroke="#8A8078" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M118 79 C120 100 122 116 124 132" fill="none" stroke="#8A8078" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M144 86 C140 104 132 118 126 132" fill="none" stroke="#8A8078" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M166 96 C154 112 138 122 128 134" fill="none" stroke="#8A8078" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Teddy body -->
+  <g>
+    <!-- ears -->
+    <circle cx="96" cy="128" r="16" fill="#E8B896"/>
+    <circle cx="160" cy="128" r="16" fill="#E8B896"/>
+    <circle cx="96" cy="128" r="8" fill="#F0C9B0"/>
+    <circle cx="160" cy="128" r="8" fill="#F0C9B0"/>
+    <!-- head -->
+    <circle cx="128" cy="148" r="42" fill="#E8B896"/>
+    <!-- cheeks -->
+    <circle cx="108" cy="156" r="7" fill="#E89A9A" opacity="0.55"/>
+    <circle cx="148" cy="156" r="7" fill="#E89A9A" opacity="0.55"/>
+    <!-- eyes -->
+    <circle cx="114" cy="144" r="4.5" fill="#3D2A1F"/>
+    <circle cx="142" cy="144" r="4.5" fill="#3D2A1F"/>
+    <circle cx="112.5" cy="142.5" r="1.4" fill="#FFF"/>
+    <circle cx="140.5" cy="142.5" r="1.4" fill="#FFF"/>
+    <!-- nose + smile -->
+    <ellipse cx="128" cy="156" rx="5" ry="3.5" fill="#3D2A1F"/>
+    <path d="M120 164 Q128 170 136 164" fill="none" stroke="#3D2A1F" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Gift sticks / chocolate bars teddy holds -->
+  <g>
+    <rect x="108" y="178" width="8" height="36" rx="2" fill="#5C3D2E" transform="rotate(-12 112 196)"/>
+    <rect x="120" y="176" width="8" height="38" rx="2" fill="#4A2F22"/>
+    <rect x="132" y="178" width="8" height="36" rx="2" fill="#5C3D2E" transform="rotate(12 136 196)"/>
+  </g>
+
+  <!-- Small bow under balloons -->
+  <path d="M120 132 C116 126 110 128 112 134 C114 138 120 136 124 134 C128 136 134 138 136 134 C138 128 132 126 128 132 Z" fill="#E8A0B0"/>
+</svg>

@@ -5,6 +5,10 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import {
+  OCCASION_LINKS,
+  RECIPIENT_LINKS,
+} from "@/lib/storefront/home-links";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -23,6 +27,7 @@ export type NavCategory = {
   id: string;
   name: string;
   slug: string;
+  children?: { id: string; name: string; slug: string }[];
 };
 
 export type StoreNavUser = {
@@ -54,15 +59,20 @@ export function StoreNav({
   function NavLink({
     href,
     children,
+    className,
   }: {
     href: string;
     children: React.ReactNode;
+    className?: string;
   }) {
     return (
       <Link
         href={href}
         onClick={() => setOpen(false)}
-        className="block rounded-md px-3 py-2 text-sm font-medium text-kraft-ink transition hover:bg-muted"
+        className={
+          className ??
+          "block rounded-md px-3 py-2 text-sm font-medium text-kraft-ink transition hover:bg-muted"
+        }
       >
         {children}
       </Link>
@@ -76,7 +86,7 @@ export function StoreNav({
           <button
             type="button"
             aria-label="Open menu"
-            className="flex size-10 shrink-0 items-center justify-center text-white/90 transition hover:bg-white/10 hover:text-white"
+            className="flex size-10 shrink-0 items-center justify-center text-kraft-citrus/90 transition hover:bg-white/10 hover:text-kraft-citrus md:hidden"
           />
         }
       >
@@ -94,6 +104,30 @@ export function StoreNav({
           ) : null}
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto px-2 py-4">
+          <SectionLabel>Shop</SectionLabel>
+          <NavLink href="/shop?sort=newest">New Arrivals</NavLink>
+          <NavLink href="/shop?featured=1">Best Sellers</NavLink>
+          <NavLink
+            href="/shop?on_sale=1"
+            className="block rounded-md px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-muted"
+          >
+            Sale
+          </NavLink>
+
+          <SectionLabel>Occasions</SectionLabel>
+          {OCCASION_LINKS.map((item) => (
+            <NavLink key={item.label} href={item.href}>
+              {item.label}
+            </NavLink>
+          ))}
+
+          <SectionLabel>Gifts For</SectionLabel>
+          {RECIPIENT_LINKS.map((item) => (
+            <NavLink key={item.label} href={item.href}>
+              {item.label}
+            </NavLink>
+          ))}
+
           <SectionLabel>Account</SectionLabel>
           {!user ? (
             <>
@@ -132,29 +166,38 @@ export function StoreNav({
             </>
           )}
 
-          <SectionLabel>Browse</SectionLabel>
-          <NavLink href="/shop">Full catalog</NavLink>
-          <NavLink href="/shop?featured=1">Featured</NavLink>
-          <NavLink href="/shop?sort=newest">New arrivals</NavLink>
-
-          <SectionLabel>Sales</SectionLabel>
-          <NavLink href="/shop?on_sale=1">On Sale</NavLink>
-          {campaigns.map((c) => (
-            <NavLink key={c.id} href={`/sale/${c.slug}`}>
-              {c.name}
-              <span className="ml-2 text-[10px] tracking-wide text-muted-foreground uppercase">
-                {c.sale_type}
-              </span>
-            </NavLink>
-          ))}
+          {campaigns.length > 0 ? (
+            <>
+              <SectionLabel>Campaigns</SectionLabel>
+              {campaigns.map((c) => (
+                <NavLink key={c.id} href={`/sale/${c.slug}`}>
+                  {c.name}
+                </NavLink>
+              ))}
+            </>
+          ) : null}
 
           {categories.length > 0 ? (
             <>
               <SectionLabel>Categories</SectionLabel>
               {categories.map((cat) => (
-                <NavLink key={cat.id} href={`/category/${cat.slug}`}>
-                  {cat.name}
-                </NavLink>
+                <div key={cat.id}>
+                  <NavLink href={`/category/${cat.slug}`}>{cat.name}</NavLink>
+                  {cat.children && cat.children.length > 0 ? (
+                    <div className="mb-1 ml-3 border-l border-border pl-2">
+                      {cat.children.map((child) => (
+                        <Link
+                          key={child.id}
+                          href={`/category/${child.slug}`}
+                          onClick={() => setOpen(false)}
+                          className="block rounded-md px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-kraft-ink"
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               ))}
             </>
           ) : null}

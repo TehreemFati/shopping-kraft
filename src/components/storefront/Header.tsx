@@ -8,6 +8,7 @@ import {
 import { getCartCount } from "@/lib/actions/cart";
 import { isAdminOrStaff } from "@/lib/auth/roles";
 import { StoreNav } from "@/components/storefront/StoreNav";
+import { StorePrimaryNav } from "@/components/storefront/StorePrimaryNav";
 import { BrandLogo } from "@/components/storefront/BrandLogo";
 import {
   GuestAccountLink,
@@ -28,16 +29,16 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-kraft-ink text-white">
-      <div className="mx-auto flex h-16 max-w-6xl min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-6">
+      <div className="mx-auto flex h-[4.25rem] max-w-6xl min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-6">
         <div className="min-w-0 shrink">
-          <BrandLogo size="sm" />
+          <BrandLogo size="sm" tone="onDark" />
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-0.5">
           <Link
             href="/search"
             aria-label="Search"
-            className="flex size-10 items-center justify-center text-white/85 transition hover:bg-white/10 hover:text-white"
+            className="flex size-10 items-center justify-center text-kraft-citrus/90 transition hover:bg-white/10 hover:text-kraft-citrus"
           >
             <Search className="size-5" />
           </Link>
@@ -47,16 +48,17 @@ export async function Header() {
               fullName={currentUser.profile?.full_name ?? null}
               email={currentUser.user.email}
               role={role}
+              tone="onDark"
             />
           ) : (
-            <GuestAccountLink />
+            <GuestAccountLink tone="onDark" />
           )}
 
           {showCart ? (
             <Link
               href="/cart"
               aria-label="Cart"
-              className="relative flex size-10 items-center justify-center text-white/85 transition hover:bg-white/10 hover:text-white"
+              className="relative flex size-10 items-center justify-center text-kraft-citrus/90 transition hover:bg-white/10 hover:text-kraft-citrus"
             >
               <ShoppingBag className="size-5" />
               {cartCount > 0 ? (
@@ -72,6 +74,7 @@ export async function Header() {
               id: c.id,
               name: c.name,
               slug: c.slug,
+              children: c.children,
             }))}
             campaigns={campaigns.map((c) => ({
               id: c.id,
@@ -89,6 +92,12 @@ export async function Header() {
                 : null
             }
           />
+        </div>
+      </div>
+
+      <div className="hidden border-t border-white/10 md:block">
+        <div className="mx-auto flex h-11 max-w-6xl items-center justify-center px-6">
+          <StorePrimaryNav tone="onDark" />
         </div>
       </div>
     </header>

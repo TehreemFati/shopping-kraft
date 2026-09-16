@@ -8,12 +8,13 @@ type BrandLogoProps = {
   /** Compact header mark vs larger footer mark */
   size?: "sm" | "md" | "lg";
   showWordmark?: boolean;
+  tone?: "onDark" | "onLight";
 };
 
 const sizes = {
-  sm: { box: "h-10 w-10", img: 40 },
-  md: { box: "h-12 w-12", img: 48 },
-  lg: { box: "h-16 w-16", img: 64 },
+  sm: { box: "size-10", px: 40 },
+  md: { box: "size-12", px: 48 },
+  lg: { box: "size-16", px: 64 },
 };
 
 export function BrandLogo({
@@ -21,8 +22,10 @@ export function BrandLogo({
   className,
   size = "sm",
   showWordmark = true,
+  tone = "onDark",
 }: BrandLogoProps) {
   const s = sizes[size];
+  const onLight = tone === "onLight";
 
   const mark = (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
@@ -35,20 +38,24 @@ export function BrandLogo({
         <Image
           src="/brand/shopping-kraft-logo.png"
           alt="Shopping Kraft"
-          width={s.img}
-          height={s.img}
-          className="object-contain p-0.5"
+          width={s.px}
+          height={s.px}
+          className="size-full object-cover object-[50%_28%]"
           priority={size === "sm"}
         />
       </span>
       {showWordmark ? (
         <span
           className={cn(
-            "font-display text-xl tracking-tight text-white sm:text-2xl",
+            "font-display text-xl tracking-tight sm:text-2xl",
+            onLight ? "text-kraft-ink" : "text-white",
             size === "sm" && "hidden sm:inline",
           )}
         >
-          Shopping <span className="text-kraft-citrus">Kraft</span>
+          Shopping{" "}
+          <span className={onLight ? "text-kraft-ink/70" : "text-kraft-citrus"}>
+            Kraft
+          </span>
         </span>
       ) : null}
     </span>

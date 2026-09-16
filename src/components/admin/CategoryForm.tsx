@@ -23,18 +23,31 @@ import {
 import { toast } from "sonner";
 import type { Category } from "@/types/database";
 
-export function CategoryForm({ category }: { category?: Category }) {
+export function CategoryForm({
+  category,
+  parentOptions = [],
+}: {
+  category?: Category;
+  /** Top-level categories only (for parent picker). */
+  parentOptions?: Category[];
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState(category?.name ?? "");
+  const [parentId, setParentId] = useState(category?.parent_id ?? "");
   const [imageUrl, setImageUrl] = useState(category?.image_url ?? "");
   const [errors, setErrors] = useState<FormErrors>({});
   const isEdit = Boolean(category);
+
+  const selectableParents = parentOptions.filter(
+    (c) => c.id !== category?.id && !c.parent_id,
+  );
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     if (imageUrl) formData.set("image_url", imageUrl);
+    formData.set("parent_id", parentId);
 
     startTransition(async () => {
       const result = isEdit
@@ -81,6 +94,28 @@ export function CategoryForm({ category }: { category?: Category }) {
           />
           <FieldError message={errors.slug} />
           <div className="space-y-2">
+            <Label htmlFor="parent_id">Parent category</Label>
+            <select
+              id="parent_id"
+              name="parent_id"
+              value={parentId}
+              onChange={(e) => setParentId(e.target.value)}
+              aria-invalid={!!errors.parent_id}
+              className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <option value="">None (top-level)</option>
+              {selectableParents.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Optional. Only one level of nesting is supported.
+            </p>
+            <FieldError message={errors.parent_id} />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
@@ -105,13 +140,16 @@ export function CategoryForm({ category }: { category?: Category }) {
 
         <AdminFormSection
           title="Image"
-          description="Optional cover for the category slider."
+          description="Optional cover photo for storefront sliders (works for both categories and subcategories)."
         >
           <ImageUploader
             type="category"
             value={imageUrl ? [imageUrl] : []}
             onChange={(urls) => setImageUrl(urls[0] ?? "")}
           />
+          <p className="mt-2 text-xs text-muted-foreground">
+            Leave empty to show a styled gradient placeholder on the homepage.
+          </p>
         </AdminFormSection>
 
         <input

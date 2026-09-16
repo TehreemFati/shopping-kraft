@@ -68,7 +68,7 @@ export function AdminFilters({
       {fields.map((field) => {
         if (field.type === "search") {
           return (
-            <div key={field.name} className="min-w-[200px] flex-1 space-y-1.5">
+            <div key={field.name} className="w-full flex-1 space-y-1.5 sm:min-w-[12rem]">
               {field.label ? (
                 <Label htmlFor={field.name}>{field.label}</Label>
               ) : null}
@@ -87,7 +87,7 @@ export function AdminFilters({
         }
 
         return (
-          <div key={field.name} className="min-w-[160px] space-y-1.5">
+          <div key={field.name} className="w-full space-y-1.5 sm:w-auto sm:min-w-[10rem]">
             <Label htmlFor={field.name}>{field.label}</Label>
             <select
               id={field.name}

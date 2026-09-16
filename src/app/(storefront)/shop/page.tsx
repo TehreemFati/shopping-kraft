@@ -14,12 +14,16 @@ export default async function ShopPage({
     featured?: string;
     on_sale?: string;
     sort?: string;
+    max_price?: string;
   }>;
 }) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const featured = params.featured === "1";
   const onSale = params.on_sale === "1";
+  const maxPriceRaw = Number(params.max_price);
+  const maxPrice =
+    Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? maxPriceRaw : undefined;
   const sort =
     params.sort === "price_asc" || params.sort === "price_desc"
       ? params.sort
@@ -29,20 +33,26 @@ export default async function ShopPage({
     featured,
     onSale,
     sort,
+    maxPrice,
   });
 
   const title = onSale
     ? "On Sale"
     : featured
       ? "Featured"
-      : sort === "newest" && !featured && !onSale
-        ? "All Products"
-        : "Catalog";
+      : maxPrice
+        ? `Under Rs. ${maxPrice.toLocaleString("en-PK")}`
+        : sort === "price_desc"
+          ? "Premium Gifts"
+          : sort === "newest" && !featured && !onSale
+            ? "All Products"
+            : "Catalog";
 
   function pageHref(p: number) {
     const sp = new URLSearchParams();
     if (featured) sp.set("featured", "1");
     if (onSale) sp.set("on_sale", "1");
+    if (maxPrice) sp.set("max_price", String(maxPrice));
     if (sort && sort !== "newest") sp.set("sort", sort);
     if (params.sort === "newest") sp.set("sort", "newest");
     if (p > 1) sp.set("page", String(p));

@@ -6,6 +6,54 @@ import { requirePermission, requireAnyPermission } from "@/lib/auth/session";
 import { categorySchema } from "@/lib/validators/schemas";
 import type { Category } from "@/types/database";
 
+async function resolveParentId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  parentId: string | undefined,
+  selfId?: string,
+) {
+  if (!parentId) return { parent_id: null as string | null };
+
+  if (selfId && parentId === selfId) {
+    return { error: { parent_id: ["Category cannot be its own parent"] } };
+  }
+
+  const { data: parent } = await supabase
+    .from("categories")
+    .select("id, parent_id, deleted_at")
+    .eq("id", parentId)
+    .maybeSingle();
+
+  if (!parent || parent.deleted_at) {
+    return { error: { parent_id: ["Parent category not found"] } };
+  }
+  if (parent.parent_id) {
+    return {
+      error: {
+        parent_id: ["Only top-level categories can be parents (one level)"],
+      },
+    };
+  }
+
+  if (selfId) {
+    const { count } = await supabase
+      .from("categories")
+      .select("id", { count: "exact", head: true })
+      .eq("parent_id", selfId)
+      .is("deleted_at", null);
+    if ((count ?? 0) > 0) {
+      return {
+        error: {
+          parent_id: [
+            "This category has subcategories — remove them before nesting it",
+          ],
+        },
+      };
+    }
+  }
+
+  return { parent_id: parentId };
+}
+
 export async function createCategory(formData: FormData) {
   const { supabase } = await requirePermission("categories.manage");
 
@@ -23,7 +71,15 @@ export async function createCategory(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  const { error } = await supabase.from("categories").insert(parsed.data);
+  const parentResult = await resolveParentId(supabase, parsed.data.parent_id);
+  if ("error" in parentResult && parentResult.error) {
+    return { error: parentResult.error };
+  }
+
+  const { error } = await supabase.from("categories").insert({
+    ...parsed.data,
+    parent_id: parentResult.parent_id ?? null,
+  });
   if (error) return { error: { _form: [error.message] } };
 
   revalidatePath("/");
@@ -48,9 +104,21 @@ export async function updateCategory(id: string, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
+  const parentResult = await resolveParentId(
+    supabase,
+    parsed.data.parent_id,
+    id,
+  );
+  if ("error" in parentResult && parentResult.error) {
+    return { error: parentResult.error };
+  }
+
   const { error } = await supabase
     .from("categories")
-    .update(parsed.data)
+    .update({
+      ...parsed.data,
+      parent_id: parentResult.parent_id ?? null,
+    })
     .eq("id", id);
 
   if (error) return { error: { _form: [error.message] } };

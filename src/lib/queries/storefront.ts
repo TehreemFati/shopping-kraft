@@ -40,12 +40,42 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   return data as Category | null;
 }
 
+export async function getCategoryById(id: string): Promise<Category | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("id", id)
+    .eq("is_active", true)
+    .is("deleted_at", null)
+    .maybeSingle();
+  return data as Category | null;
+}
+
+export async function getChildCategories(
+  parentId: string,
+): Promise<Category[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("parent_id", parentId)
+    .eq("is_active", true)
+    .is("deleted_at", null)
+    .order("sort_order")
+    .order("name");
+  return (data ?? []) as Category[];
+}
+
 export async function getProductsByCategory(categoryId: string) {
   const supabase = await createClient();
+  const children = await getChildCategories(categoryId);
+  const ids = [categoryId, ...children.map((c) => c.id)];
+
   const { data } = await supabase
     .from("products")
     .select("*, product_images(*), inventory(*)")
-    .eq("category_id", categoryId)
+    .in("category_id", ids)
     .eq("is_active", true)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
@@ -151,17 +181,36 @@ export async function getTopSellerProducts(limit = 12) {
     .filter((p): p is ProductWithImages => Boolean(p));
 }
 
-export async function getNavCategories(limit = 6): Promise<Category[]> {
+export type NavCategoryTree = {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  children: { id: string; name: string; slug: string }[];
+};
+
+export async function getNavCategories(limit = 6): Promise<NavCategoryTree[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("categories")
-    .select("*")
+    .select("id, name, slug, parent_id, sort_order, image_url")
     .eq("is_active", true)
     .is("deleted_at", null)
     .order("sort_order")
-    .order("name")
-    .limit(limit);
-  return (data ?? []) as Category[];
+    .order("name");
+
+  const all = data ?? [];
+  const roots = all.filter((c) => !c.parent_id).slice(0, limit);
+
+  return roots.map((root) => ({
+    id: root.id,
+    name: root.name,
+    slug: root.slug,
+    image_url: root.image_url ?? null,
+    children: all
+      .filter((c) => c.parent_id === root.id)
+      .map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
+  }));
 }
 
 export async function getAllProducts(
@@ -171,6 +220,7 @@ export async function getAllProducts(
     featured?: boolean;
     onSale?: boolean;
     sort?: "newest" | "price_asc" | "price_desc";
+    maxPrice?: number;
   } = {},
 ) {
   const supabase = await createClient();
@@ -186,6 +236,9 @@ export async function getAllProducts(
     .is("deleted_at", null);
 
   if (options.featured) query = query.eq("is_featured", true);
+  if (options.maxPrice != null && options.maxPrice > 0) {
+    query = query.lte("price", options.maxPrice);
+  }
 
   if (options.sort === "price_asc") {
     query = query.order("price", { ascending: true });
@@ -200,12 +253,17 @@ export async function getAllProducts(
   let total = count ?? 0;
 
   if (options.onSale) {
-    const { data: all } = await supabase
+    let saleQuery = supabase
       .from("products")
       .select("*, product_images(*), categories(*), inventory(*)")
       .eq("is_active", true)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
+    if (options.maxPrice != null && options.maxPrice > 0) {
+      saleQuery = saleQuery.lte("price", options.maxPrice);
+    }
+
+    const { data: all } = await saleQuery;
 
     products = ((all ?? []) as ProductWithImages[]).filter(
       (p) => p.sale_price !== null && p.sale_price < p.price,
@@ -354,4 +412,44 @@ export async function getCartSessionId(): Promise<string> {
     });
   }
   return sessionId;
+}
+
+export type ApprovedReview = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  authorName: string;
+  productName: string | null;
+};
+
+export async function getApprovedReviews(limit = 6): Promise<ApprovedReview[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reviews")
+    .select(
+      "id, rating, comment, created_at, profiles(full_name), products(name)",
+    )
+    .eq("is_approved", true)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  type Row = {
+    id: string;
+    rating: number;
+    comment: string | null;
+    created_at: string;
+    profiles: { full_name: string | null } | null;
+    products: { name: string } | null;
+  };
+
+  return ((data ?? []) as unknown as Row[]).map((row) => ({
+    id: row.id,
+    rating: row.rating,
+    comment: row.comment,
+    created_at: row.created_at,
+    authorName: row.profiles?.full_name?.trim() || "Customer",
+    productName: row.products?.name ?? null,
+  }));
 }

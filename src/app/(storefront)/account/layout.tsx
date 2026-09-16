@@ -27,16 +27,16 @@ export default async function AccountLayout({
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6 sm:py-8">
       <PageBreadcrumbs
         items={[
           { label: "Home", href: "/" },
           { label: "Account" },
         ]}
       />
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">My Account</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 sm:mb-8">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold sm:text-3xl">My Account</h1>
           <p className="mt-1 text-sm text-muted-foreground">Hi, {displayName}</p>
         </div>
         <form action={logout}>
@@ -45,19 +45,19 @@ export default async function AccountLayout({
           </Button>
         </form>
       </div>
-      <div className="grid gap-8 md:grid-cols-4">
-        <nav className="space-y-1">
+      <div className="grid gap-6 md:grid-cols-4 md:gap-8">
+        <nav className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 md:flex-col md:space-y-1 md:overflow-visible md:pb-0">
           {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="block rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
+              className="shrink-0 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap hover:bg-muted"
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="md:col-span-3">{children}</div>
+        <div className="min-w-0 md:col-span-3">{children}</div>
       </div>
     </div>
   );

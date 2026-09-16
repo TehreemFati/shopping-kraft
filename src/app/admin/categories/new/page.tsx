@@ -1,9 +1,13 @@
+import { getAdminCategories } from "@/lib/actions/categories";
 import { CategoryForm } from "@/components/admin/CategoryForm";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 export const metadata = { title: "Add Category" };
 
-export default function NewCategoryPage() {
+export default async function NewCategoryPage() {
+  const categories = await getAdminCategories();
+  const parentOptions = categories.filter((c) => !c.parent_id);
+
   return (
     <div>
       <AdminPageHeader
@@ -14,7 +18,7 @@ export default function NewCategoryPage() {
           { label: "Add" },
         ]}
       />
-      <CategoryForm />
+      <CategoryForm parentOptions={parentOptions} />
     </div>
   );
 }
