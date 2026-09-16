@@ -25,6 +25,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<FormErrors>({});
   const bank = (settings.bank_account ?? {}) as Record<string, string>;
+  const jazzcash = (settings.jazzcash_account ?? {}) as Record<string, string>;
+  const easypaisa = (settings.easypaisa_account ?? {}) as Record<string, string>;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,7 +50,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
   return (
     <AdminFormShell
       title="Store settings"
-      description="Contact details, shipping, and bank transfer info."
+      description="Contact details, shipping, bank, JazzCash, and EasyPaisa."
       className="max-w-2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -158,6 +160,54 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               aria-invalid={!!errors.iban}
             />
             <FieldError message={errors.iban} />
+          </div>
+        </AdminFormSection>
+
+        <AdminFormSection
+          title="JazzCash"
+          description="Shown at checkout for JazzCash payments."
+        >
+          <div className="space-y-2">
+            <Label htmlFor="jazzcash_account_title">Account Title</Label>
+            <Input
+              id="jazzcash_account_title"
+              name="jazzcash_account_title"
+              defaultValue={jazzcash.account_title ?? ""}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="jazzcash_account_number">JazzCash Number</Label>
+            <Input
+              id="jazzcash_account_number"
+              name="jazzcash_account_number"
+              defaultValue={jazzcash.account_number ?? ""}
+              required
+            />
+          </div>
+        </AdminFormSection>
+
+        <AdminFormSection
+          title="EasyPaisa"
+          description="Shown at checkout for EasyPaisa payments."
+        >
+          <div className="space-y-2">
+            <Label htmlFor="easypaisa_account_title">Account Title</Label>
+            <Input
+              id="easypaisa_account_title"
+              name="easypaisa_account_title"
+              defaultValue={easypaisa.account_title ?? ""}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="easypaisa_account_number">EasyPaisa Number</Label>
+            <Input
+              id="easypaisa_account_number"
+              name="easypaisa_account_number"
+              defaultValue={easypaisa.account_number ?? ""}
+              required
+            />
           </div>
         </AdminFormSection>
 

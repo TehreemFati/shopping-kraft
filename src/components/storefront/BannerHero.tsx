@@ -57,7 +57,7 @@ export function BannerHero({ banners }: { banners: Banner[] }) {
           sizes="100vw"
         />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,oklch(0.4_0.08_160),transparent_55%),linear-gradient(135deg,oklch(0.22_0.04_165),oklch(0.28_0.06_145))] kraft-grain" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,oklch(0.45_0.06_50),transparent_55%),linear-gradient(135deg,oklch(0.26_0.04_50),oklch(0.34_0.05_55))] kraft-grain" />
       )}
 
       <div className="absolute inset-0 bg-gradient-to-r from-kraft-ink/90 via-kraft-ink/55 to-kraft-ink/20" />

@@ -41,11 +41,13 @@ test.describe("Storefront cart & checkout", () => {
       await page.getByLabel("Address", { exact: true }).fill("Shop F111 Saddar");
       await page.getByLabel("City").fill("Rawalpindi");
       await page.getByLabel("Province").fill("Punjab");
-      await page.getByText("Cash on Delivery (COD)").click();
-      await page.getByRole("button", { name: "Place Order" }).click();
+      await page.getByText("JazzCash", { exact: true }).click();
+      await page
+        .getByRole("button", { name: /Place Order/i })
+        .click();
       await expect(
         page
-          .getByText(/Order placed successfully|My Account|Orders/i)
+          .getByText(/Order placed|My Account|Orders/i)
           .first(),
       ).toBeVisible({ timeout: 45_000 });
     } finally {

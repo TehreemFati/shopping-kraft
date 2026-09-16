@@ -5,6 +5,18 @@ import { PageBreadcrumbs } from "@/components/storefront/PageBreadcrumbs";
 
 export const metadata = { title: "Checkout" };
 
+type WalletAccount = {
+  account_title: string;
+  account_number: string;
+};
+
+type BankAccount = {
+  bank: string;
+  account_title: string;
+  account_number: string;
+  iban: string;
+};
+
 export default async function CheckoutPage() {
   const [items, settings] = await Promise.all([
     getCartItems(),
@@ -12,14 +24,18 @@ export default async function CheckoutPage() {
   ]);
 
   const shipping = Number(settings.shipping_flat_rate ?? 200);
-  const bankAccount = settings.bank_account as
-    | {
-        bank: string;
-        account_title: string;
-        account_number: string;
-        iban: string;
-      }
-    | undefined;
+  const bankAccount = settings.bank_account as BankAccount | undefined;
+  const contactPhone = String(settings.contact_phone ?? "03135009138");
+
+  const jazzcashAccount = (settings.jazzcash_account as WalletAccount | undefined) ?? {
+    account_title: "Shopping Kraft",
+    account_number: contactPhone,
+  };
+
+  const easypaisaAccount = (settings.easypaisa_account as WalletAccount | undefined) ?? {
+    account_title: "Shopping Kraft",
+    account_number: contactPhone,
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -35,6 +51,8 @@ export default async function CheckoutPage() {
         items={items}
         shipping={shipping}
         bankAccount={bankAccount}
+        jazzcashAccount={jazzcashAccount}
+        easypaisaAccount={easypaisaAccount}
       />
     </div>
   );

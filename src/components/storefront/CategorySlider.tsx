@@ -4,11 +4,11 @@ import type { Category } from "@/types/database";
 import { HorizontalSlider } from "@/components/storefront/SectionSlider";
 
 const TINTS = [
-  "from-emerald-900/80 to-emerald-950/40",
-  "from-teal-900/80 to-slate-900/50",
-  "from-lime-900/70 to-emerald-950/50",
-  "from-cyan-900/70 to-slate-950/50",
-  "from-stone-800/80 to-emerald-950/40",
+  "from-amber-900/80 to-stone-950/50",
+  "from-orange-900/75 to-stone-900/50",
+  "from-rose-900/70 to-stone-950/50",
+  "from-stone-800/80 to-amber-950/40",
+  "from-yellow-900/70 to-stone-950/50",
 ];
 
 export function CategorySlider({ categories }: { categories: Category[] }) {

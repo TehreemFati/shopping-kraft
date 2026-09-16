@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | Shopping Kraft",
   },
   description:
-    "Crafted finds, delivered across Pakistan — discover curated products at Shopping Kraft.",
+    "Good Gifts for Good Relations — curated gift boxes, baskets, and celebration packages delivered across Pakistan.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

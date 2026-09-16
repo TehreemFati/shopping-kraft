@@ -1,9 +1,9 @@
 /**
- * Seed storefront catalog: 6 categories + 15 products with images + inventory.
- * Idempotent by slug — skips rows that already exist.
+ * Seed storefront catalog: 12 curated categories + products with images + inventory.
+ * Soft-deletes active categories/products outside the curated set.
+ * Idempotent by slug.
  *
  * Usage: npm run catalog:seed
- * Requires NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env.local
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -30,179 +30,229 @@ const supabase = createClient(url, key, {
 
 const CATEGORIES = [
   {
-    name: "Gift Baskets",
-    slug: "gift-baskets",
-    description: "Handcrafted wooden gift baskets for every occasion.",
+    name: "Baby Shower",
+    slug: "baby-shower",
+    description: "Sweet baskets and boxes for baby showers and newborns.",
     sort_order: 1,
-    image: "category-gift-baskets.png",
-  },
-  {
-    name: "Wedding & Bridal",
-    slug: "wedding-bridal",
-    description: "Elegant hampers for weddings, mehndi, and bridal showers.",
-    sort_order: 2,
-    image: "product-wedding-basket.png",
-  },
-  {
-    name: "Baby & Newborn",
-    slug: "baby-newborn",
-    description: "Soft, joyful baskets for baby boys, girls, and newborns.",
-    sort_order: 3,
     image: "product-baby-boy-wooden-basket.png",
   },
   {
-    name: "Corporate Hampers",
-    slug: "corporate-hampers",
-    description: "Premium client gifts and employee appreciation hampers.",
+    name: "Kids Gift",
+    slug: "kids-gift",
+    description: "Fun gift sets for little ones — toys, treats, and keepsakes.",
+    sort_order: 2,
+    image: "product-baby-boy-wooden-basket.png",
+  },
+  {
+    name: "Flip Box",
+    slug: "flip-box",
+    description: "Surprise flip and explosion boxes for unforgettable reveals.",
+    sort_order: 3,
+    image: "product-corporate-hamper.png",
+  },
+  {
+    name: "Book Box",
+    slug: "book-box",
+    description: "Elegant book-style gift boxes for special moments.",
     sort_order: 4,
     image: "product-corporate-hamper.png",
   },
   {
-    name: "Occasions",
-    slug: "occasions",
-    description: "Birthday, anniversary, Eid, and celebration collections.",
+    name: "Cash Bouquet",
+    slug: "cash-bouquet",
+    description: "Stylish cash bouquets for weddings, Eidi, and celebrations.",
     sort_order: 5,
     image: "banner-good-gifts.png",
   },
   {
-    name: "Luxury Collections",
-    slug: "luxury-collections",
-    description: "Gourmet and spa-inspired luxury gift sets.",
+    name: "Window Chocolate",
+    slug: "window-chocolate",
+    description: "Premium chocolate boxes with clear window presentation.",
     sort_order: 6,
+    image: "product-wedding-basket.png",
+  },
+  {
+    name: "Valentine",
+    slug: "valentine",
+    description: "Romantic gifts for Valentine’s Day and anniversaries.",
+    sort_order: 7,
+    image: "product-wedding-basket.png",
+  },
+  {
+    name: "Acrylic Box",
+    slug: "acrylic-box",
+    description: "Clear acrylic gift boxes with lights and keepsakes.",
+    sort_order: 8,
     image: "product-corporate-hamper.png",
+  },
+  {
+    name: "Makeup Bouquet",
+    slug: "makeup-bouquet",
+    description: "Beauty bouquets packed with makeup and skincare treats.",
+    sort_order: 9,
+    image: "banner-good-gifts.png",
+  },
+  {
+    name: "Basket",
+    slug: "basket",
+    description: "Classic gift baskets for every occasion.",
+    sort_order: 10,
+    image: "category-gift-baskets.png",
+  },
+  {
+    name: "Wedding Favors",
+    slug: "wedding-favors",
+    description: "Elegant favors for mehndi, nikkah, and wedding guests.",
+    sort_order: 11,
+    image: "product-wedding-basket.png",
+  },
+  {
+    name: "Complete Package",
+    slug: "complete-package",
+    description: "Full celebration packages with teddy, balloons, and more.",
+    sort_order: 12,
+    image: "banner-good-gifts.png",
   },
 ];
 
 const PRODUCTS = [
   {
-    name: "Baby Boy Wooden Basket",
-    slug: "baby-boy-wooden-basket",
-    category: "gift-baskets",
-    description:
-      "Customisable wooden gift basket for baby boys. Delivery across Pakistan.",
-    price: 2499,
-    sale_price: null,
-    sku: "SK-BABYBOY",
-    stock: 25,
-    is_featured: true,
-    image: "product-baby-boy-wooden-basket.png",
-  },
-  {
-    name: "Baby Girl Soft Basket",
-    slug: "baby-girl-soft-basket",
-    category: "baby-newborn",
-    description:
-      "Pastel soft-toy basket with keepsakes for a newborn baby girl.",
-    price: 2699,
-    sale_price: 2399,
-    sku: "SK-BABYGIRL",
+    name: "Baby Shower Soft Basket",
+    slug: "baby-shower-soft-basket",
+    category: "baby-shower",
+    description: "Pastel baby shower basket with soft toys and keepsakes.",
+    price: 3499,
+    sale_price: 2999,
+    sku: "SK-BABYSHOWER",
     stock: 20,
     is_featured: true,
     image: "product-baby-boy-wooden-basket.png",
   },
   {
-    name: "Newborn Essentials Basket",
-    slug: "newborn-essentials-basket",
-    category: "baby-newborn",
-    description: "Practical newborn essentials packed in a kraft wooden crate.",
-    price: 3199,
+    name: "Newborn Welcome Crate",
+    slug: "newborn-welcome-crate",
+    category: "baby-shower",
+    description: "Wooden welcome crate for newborn celebrations.",
+    price: 3999,
     sale_price: null,
     sku: "SK-NEWBORN",
-    stock: 18,
+    stock: 15,
     is_featured: false,
     image: "product-baby-boy-wooden-basket.png",
   },
   {
-    name: "Wedding Bliss Hamper",
-    slug: "wedding-bliss-hamper",
-    category: "wedding-bridal",
-    description:
-      "Elegant wedding hamper with sweets, décor accents, and keepsakes.",
-    price: 5499,
-    sale_price: 4999,
-    sku: "SK-WEDBLISS",
-    stock: 15,
+    name: "Kids Party Gift Set",
+    slug: "kids-party-gift-set",
+    category: "kids-gift",
+    description: "Colourful kids gift set with teddy and party accents.",
+    price: 2799,
+    sale_price: null,
+    sku: "SK-KIDSGIFT",
+    stock: 25,
     is_featured: true,
-    image: "product-wedding-basket.png",
+    image: "product-baby-boy-wooden-basket.png",
   },
   {
-    name: "Bridal Treasure Basket",
-    slug: "bridal-treasure-basket",
-    category: "wedding-bridal",
-    description: "Luxury bridal shower basket with beauty and gift essentials.",
-    price: 6299,
-    sale_price: null,
-    sku: "SK-BRIDAL",
-    stock: 12,
+    name: "Surprise Flip Box",
+    slug: "surprise-flip-box",
+    category: "flip-box",
+    description: "Multi-layer flip box for birthdays and proposals.",
+    price: 4499,
+    sale_price: 4199,
+    sku: "SK-FLIPBOX",
+    stock: 18,
     is_featured: true,
-    image: "product-wedding-basket.png",
+    image: "product-corporate-hamper.png",
   },
   {
-    name: "Mehndi Celebration Box",
-    slug: "mehndi-celebration-box",
-    category: "wedding-bridal",
-    description: "Colourful mehndi-night gift box for guests and family.",
-    price: 3899,
+    name: "Premium Book Box",
+    slug: "premium-book-box",
+    category: "book-box",
+    description: "Sleek book-shaped gift box with custom message card.",
+    price: 3299,
     sale_price: null,
-    sku: "SK-MEHNDI",
+    sku: "SK-BOOKBOX",
     stock: 22,
     is_featured: false,
+    image: "product-corporate-hamper.png",
+  },
+  {
+    name: "Classic Cash Bouquet",
+    slug: "classic-cash-bouquet",
+    category: "cash-bouquet",
+    description: "Hand-arranged cash bouquet for weddings and Eidi.",
+    price: 5999,
+    sale_price: null,
+    sku: "SK-CASHBQ",
+    stock: 12,
+    is_featured: true,
+    image: "banner-good-gifts.png",
+  },
+  {
+    name: "Window Chocolate Gift Box",
+    slug: "window-chocolate-gift-box",
+    category: "window-chocolate",
+    description: "Assorted chocolates in a ribboned window gift box.",
+    price: 2499,
+    sale_price: 2199,
+    sku: "SK-WINCHOC",
+    stock: 30,
+    is_featured: true,
     image: "product-wedding-basket.png",
   },
   {
-    name: "Corporate Executive Hamper",
-    slug: "corporate-executive-hamper",
-    category: "corporate-hampers",
-    description:
-      "Premium executive hamper for clients, partners, and team rewards.",
-    price: 7499,
-    sale_price: 6999,
-    sku: "SK-CORPEXEC",
-    stock: 30,
+    name: "Valentine Rose Heart Box",
+    slug: "valentine-rose-heart-box",
+    category: "valentine",
+    description: "Heart-shaped Valentine arrangement with roses and treats.",
+    price: 5499,
+    sale_price: 4999,
+    sku: "SK-VALENTINE",
+    stock: 16,
     is_featured: true,
-    image: "product-corporate-hamper.png",
+    image: "product-wedding-basket.png",
   },
   {
-    name: "Thank You Client Box",
-    slug: "thank-you-client-box",
-    category: "corporate-hampers",
-    description: "Compact appreciation box for client thank-you gifts.",
-    price: 3499,
+    name: "LED Acrylic Keepsake Box",
+    slug: "led-acrylic-keepsake-box",
+    category: "acrylic-box",
+    description: "Clear acrylic box with fairy lights and photo keepsakes.",
+    price: 4799,
     sale_price: null,
-    sku: "SK-THANKYOU",
-    stock: 40,
+    sku: "SK-ACRYLIC",
+    stock: 14,
     is_featured: false,
     image: "product-corporate-hamper.png",
   },
   {
-    name: "Team Appreciation Hamper",
-    slug: "team-appreciation-hamper",
-    category: "corporate-hampers",
-    description: "Shared-office friendly hamper for team milestones.",
+    name: "Makeup Beauty Bouquet",
+    slug: "makeup-beauty-bouquet",
+    category: "makeup-bouquet",
+    description: "Makeup bouquet wrapped in soft pastel paper.",
+    price: 6999,
+    sale_price: 6499,
+    sku: "SK-MAKEUPBQ",
+    stock: 10,
+    is_featured: true,
+    image: "banner-good-gifts.png",
+  },
+  {
+    name: "Gentleman Gift Basket",
+    slug: "gentleman-gift-basket",
+    category: "basket",
+    description: "Classic tuxedo-style gift basket for him.",
     price: 4599,
     sale_price: null,
-    sku: "SK-TEAMAPP",
-    stock: 28,
-    is_featured: false,
-    image: "product-corporate-hamper.png",
-  },
-  {
-    name: "Classic Gift Basket",
-    slug: "classic-gift-basket",
-    category: "gift-baskets",
-    description: "Signature Shopping Kraft wooden gift basket for any day.",
-    price: 2999,
-    sale_price: null,
-    sku: "SK-CLASSIC",
-    stock: 35,
+    sku: "SK-BASKET",
+    stock: 20,
     is_featured: true,
     image: "category-gift-baskets.png",
   },
   {
     name: "Fruit & Nuts Basket",
     slug: "fruit-nuts-basket",
-    category: "gift-baskets",
-    description: "Fresh-feel dried fruits and nuts in a reusable wooden crate.",
+    category: "basket",
+    description: "Dried fruits and nuts in a reusable kraft basket.",
     price: 3299,
     sale_price: 2999,
     sku: "SK-FRUITNUT",
@@ -211,60 +261,53 @@ const PRODUCTS = [
     image: "category-gift-baskets.png",
   },
   {
-    name: "Birthday Celebration Basket",
-    slug: "birthday-celebration-basket",
-    category: "occasions",
-    description: "Festive birthday basket with treats and party accents.",
-    price: 2799,
+    name: "Bridal Wedding Favor Set",
+    slug: "bridal-wedding-favor-set",
+    category: "wedding-favors",
+    description: "Delicate wedding favor set for guests and bridal parties.",
+    price: 1899,
     sale_price: null,
-    sku: "SK-BDAY",
-    stock: 26,
-    is_featured: true,
-    image: "banner-good-gifts.png",
-  },
-  {
-    name: "Anniversary Rose Basket",
-    slug: "anniversary-rose-basket",
-    category: "occasions",
-    description: "Romantic anniversary basket with rose-inspired packaging.",
-    price: 4199,
-    sale_price: 3799,
-    sku: "SK-ANNIV",
-    stock: 16,
+    sku: "SK-WEDFAVOR",
+    stock: 40,
     is_featured: false,
     image: "product-wedding-basket.png",
   },
   {
-    name: "Eid Family Hamper",
-    slug: "eid-family-hamper",
-    category: "occasions",
-    description: "Shareable Eid family hamper with sweets and gourmet bites.",
-    price: 4999,
-    sale_price: null,
-    sku: "SK-EIDFAM",
-    stock: 20,
+    name: "Celebration Complete Package",
+    slug: "celebration-complete-package",
+    category: "complete-package",
+    description: "Full package with teddy, balloons, and branded gift bag.",
+    price: 8999,
+    sale_price: 8499,
+    sku: "SK-COMPLETE",
+    stock: 8,
     is_featured: true,
     image: "banner-good-gifts.png",
   },
   {
-    name: "Luxury Gourmet Collection",
-    slug: "luxury-gourmet-collection",
-    category: "luxury-collections",
-    description: "Curated gourmet selection for premium gifting moments.",
-    price: 8999,
-    sale_price: 8499,
-    sku: "SK-LUXGOURMET",
+    name: "Birthday Huge Gift Box",
+    slug: "birthday-huge-gift-box",
+    category: "complete-package",
+    description: "Oversized birthday gift box packed with celebration treats.",
+    price: 7499,
+    sale_price: null,
+    sku: "SK-HUGEBOX",
     stock: 10,
-    is_featured: true,
-    image: "product-corporate-hamper.png",
+    is_featured: false,
+    image: "banner-good-gifts.png",
   },
 ];
+
+const CURATED_CAT_SLUGS = new Set(CATEGORIES.map((c) => c.slug));
+const CURATED_PRODUCT_SLUGS = new Set(PRODUCTS.map((p) => p.slug));
 
 const summary = {
   categoriesCreated: 0,
   categoriesSkipped: 0,
+  categoriesSoftDeleted: 0,
   productsCreated: 0,
   productsSkipped: 0,
+  productsSoftDeleted: 0,
   imagesUploaded: 0,
 };
 
@@ -282,6 +325,44 @@ async function uploadFile(bucket, storagePath, filePath) {
   return publicUrl;
 }
 
+async function softDeleteStaleCategories() {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, slug, name")
+    .eq("is_active", true)
+    .is("deleted_at", null);
+  if (error) throw error;
+
+  for (const row of data ?? []) {
+    if (CURATED_CAT_SLUGS.has(row.slug)) continue;
+    await supabase
+      .from("categories")
+      .update({ deleted_at: new Date().toISOString(), is_active: false })
+      .eq("id", row.id);
+    summary.categoriesSoftDeleted += 1;
+    console.log(`category soft-delete: ${row.name}`);
+  }
+}
+
+async function softDeleteStaleProducts() {
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, slug, name")
+    .eq("is_active", true)
+    .is("deleted_at", null);
+  if (error) throw error;
+
+  for (const row of data ?? []) {
+    if (CURATED_PRODUCT_SLUGS.has(row.slug)) continue;
+    await supabase
+      .from("products")
+      .update({ deleted_at: new Date().toISOString(), is_active: false })
+      .eq("id", row.id);
+    summary.productsSoftDeleted += 1;
+    console.log(`product soft-delete: ${row.name}`);
+  }
+}
+
 async function ensureCategories() {
   const bySlug = new Map();
 
@@ -297,20 +378,21 @@ async function ensureCategories() {
       bySlug.set(cat.slug, existing.id);
       summary.categoriesSkipped += 1;
 
-      if (!existing.image_url) {
-        const asset = join(ASSETS, cat.image);
-        if (existsSync(asset)) {
-          const imageUrl = await uploadFile(
-            "category-images",
-            `seed/${cat.slug}.png`,
-            asset,
-          );
-          await supabase
-            .from("categories")
-            .update({ image_url: imageUrl })
-            .eq("id", existing.id);
-        }
+      const asset = join(ASSETS, cat.image);
+      const patch = {
+        name: cat.name,
+        description: cat.description,
+        sort_order: cat.sort_order,
+        is_active: true,
+      };
+      if (!existing.image_url && existsSync(asset)) {
+        patch.image_url = await uploadFile(
+          "category-images",
+          `seed/${cat.slug}.png`,
+          asset,
+        );
       }
+      await supabase.from("categories").update(patch).eq("id", existing.id);
       continue;
     }
 
@@ -384,7 +466,13 @@ async function ensureInventory(productId, quantity) {
     .is("variant_id", null)
     .maybeSingle();
 
-  if (existing) return;
+  if (existing) {
+    await supabase
+      .from("inventory")
+      .update({ quantity })
+      .eq("id", existing.id);
+    return;
+  }
 
   const { error } = await supabase.from("inventory").insert({
     product_id: productId,
@@ -409,6 +497,19 @@ async function ensureProducts(categoryBySlug) {
 
     if (existing) {
       summary.productsSkipped += 1;
+      await supabase
+        .from("products")
+        .update({
+          category_id: categoryId,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          sale_price: product.sale_price,
+          sku: product.sku,
+          is_active: true,
+          is_featured: product.is_featured,
+        })
+        .eq("id", existing.id);
       await ensureProductImage(
         existing.id,
         product.slug,
@@ -445,7 +546,9 @@ async function ensureProducts(categoryBySlug) {
 }
 
 async function main() {
-  console.log("Seeding catalog (6 categories, 15 products)…\n");
+  console.log("Seeding curated catalog (12 categories, 15 products)…\n");
+  await softDeleteStaleCategories();
+  await softDeleteStaleProducts();
   const categoryBySlug = await ensureCategories();
   await ensureProducts(categoryBySlug);
 

@@ -13,6 +13,8 @@ import { formatPrice } from "@/lib/utils/format";
 import { toast } from "sonner";
 import type { CartItemWithProduct } from "@/types/database";
 
+type PrepaidMethod = "jazzcash" | "easypaisa" | "bank_transfer";
+
 interface CheckoutFormProps {
   items: CartItemWithProduct[];
   shipping: number;
@@ -22,12 +24,27 @@ interface CheckoutFormProps {
     account_number: string;
     iban: string;
   };
+  jazzcashAccount?: {
+    account_title: string;
+    account_number: string;
+  };
+  easypaisaAccount?: {
+    account_title: string;
+    account_number: string;
+  };
 }
 
-export function CheckoutForm({ items, shipping, bankAccount }: CheckoutFormProps) {
+export function CheckoutForm({
+  items,
+  shipping,
+  bankAccount,
+  jazzcashAccount,
+  easypaisaAccount,
+}: CheckoutFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [paymentMethod, setPaymentMethod] = useState<"cod" | "bank_transfer">("cod");
+  const [paymentMethod, setPaymentMethod] =
+    useState<PrepaidMethod>("jazzcash");
   const [discount, setDiscount] = useState(0);
 
   const subtotal = items.reduce(
@@ -59,7 +76,10 @@ export function CheckoutForm({ items, shipping, bankAccount }: CheckoutFormProps
         toast.error(errors[0] ?? "Checkout failed");
         return;
       }
-      toast.success("Order placed successfully!");
+      toast.success("Order placed! Opening WhatsApp to notify us…");
+      if (result.whatsappUrl) {
+        window.open(result.whatsappUrl, "_blank", "noopener,noreferrer");
+      }
       router.push(`/account/orders?success=${result.orderNumber}`);
     });
   }
@@ -122,18 +142,32 @@ export function CheckoutForm({ items, shipping, bankAccount }: CheckoutFormProps
             <CardTitle>Payment Method</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Prepaid only — transfer the total, then place your order. We will
+              confirm payment on WhatsApp.
+            </p>
             <div className="space-y-2">
               <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="radio"
                   name="payment_method_radio"
-                  checked={paymentMethod === "cod"}
-                  onChange={() => setPaymentMethod("cod")}
+                  checked={paymentMethod === "jazzcash"}
+                  onChange={() => setPaymentMethod("jazzcash")}
                   className="mr-2"
                 />
-                Cash on Delivery (COD)
+                JazzCash
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  name="payment_method_radio"
+                  checked={paymentMethod === "easypaisa"}
+                  onChange={() => setPaymentMethod("easypaisa")}
+                  className="mr-2"
+                />
+                EasyPaisa
+              </label>
+              <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="radio"
                   name="payment_method_radio"
@@ -144,15 +178,41 @@ export function CheckoutForm({ items, shipping, bankAccount }: CheckoutFormProps
                 Bank Transfer
               </label>
             </div>
-            {paymentMethod === "bank_transfer" && bankAccount && (
+
+            {paymentMethod === "jazzcash" && jazzcashAccount ? (
+              <div className="rounded-md bg-muted p-4 text-sm">
+                <p className="font-medium">Send JazzCash to:</p>
+                <p>Title: {jazzcashAccount.account_title}</p>
+                <p>Number: {jazzcashAccount.account_number}</p>
+                <p className="mt-2 text-muted-foreground">
+                  Amount: {formatPrice(total)}
+                </p>
+              </div>
+            ) : null}
+
+            {paymentMethod === "easypaisa" && easypaisaAccount ? (
+              <div className="rounded-md bg-muted p-4 text-sm">
+                <p className="font-medium">Send EasyPaisa to:</p>
+                <p>Title: {easypaisaAccount.account_title}</p>
+                <p>Number: {easypaisaAccount.account_number}</p>
+                <p className="mt-2 text-muted-foreground">
+                  Amount: {formatPrice(total)}
+                </p>
+              </div>
+            ) : null}
+
+            {paymentMethod === "bank_transfer" && bankAccount ? (
               <div className="rounded-md bg-muted p-4 text-sm">
                 <p className="font-medium">Transfer to:</p>
                 <p>Bank: {bankAccount.bank}</p>
                 <p>Account: {bankAccount.account_title}</p>
                 <p>Number: {bankAccount.account_number}</p>
                 <p>IBAN: {bankAccount.iban}</p>
+                <p className="mt-2 text-muted-foreground">
+                  Amount: {formatPrice(total)}
+                </p>
               </div>
-            )}
+            ) : null}
           </CardContent>
         </Card>
 
@@ -167,7 +227,8 @@ export function CheckoutForm({ items, shipping, bankAccount }: CheckoutFormProps
                 type="button"
                 variant="outline"
                 onClick={(e) => {
-                  const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                  const input = e.currentTarget
+                    .previousElementSibling as HTMLInputElement;
                   if (input?.value) applyCoupon(input.value);
                 }}
               >
@@ -197,7 +258,7 @@ export function CheckoutForm({ items, shipping, bankAccount }: CheckoutFormProps
                 <span>{formatPrice(item.unit_price * item.quantity)}</span>
               </div>
             ))}
-            <div className="border-t pt-3 space-y-2">
+            <div className="space-y-2 border-t pt-3">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
@@ -218,7 +279,7 @@ export function CheckoutForm({ items, shipping, bankAccount }: CheckoutFormProps
               </div>
             </div>
             <Button type="submit" className="w-full" size="lg" disabled={isPending}>
-              {isPending ? "Placing Order..." : "Place Order"}
+              {isPending ? "Placing Order..." : "Place Order & Notify on WhatsApp"}
             </Button>
           </CardContent>
         </Card>

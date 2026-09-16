@@ -7,6 +7,7 @@ import {
 } from "@/lib/queries/storefront";
 import { getCartCount } from "@/lib/actions/cart";
 import { StoreNav } from "@/components/storefront/StoreNav";
+import { BrandLogo } from "@/components/storefront/BrandLogo";
 
 export async function Header() {
   const [categories, cartCount, currentUser, campaigns] = await Promise.all([
@@ -23,12 +24,7 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-kraft-ink text-white">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
-        <Link href="/" className="shrink-0">
-          <span className="font-display text-xl tracking-tight text-white sm:text-2xl">
-            Shopping{" "}
-            <span className="text-kraft-citrus">Kraft</span>
-          </span>
-        </Link>
+        <BrandLogo size="sm" />
 
         <div className="ml-auto flex items-center gap-0.5">
           <Link

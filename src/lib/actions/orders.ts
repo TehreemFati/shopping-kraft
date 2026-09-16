@@ -192,7 +192,44 @@ export async function createOrder(formData: FormData) {
 
   revalidatePath("/cart");
   revalidatePath("/admin/orders");
-  return { success: true, orderNumber: order.order_number, orderId: order.id };
+
+  const methodLabel =
+    parsed.data.payment_method === "jazzcash"
+      ? "JazzCash"
+      : parsed.data.payment_method === "easypaisa"
+        ? "EasyPaisa"
+        : "Bank Transfer";
+
+  const itemLines = items
+    .map((item) => `• ${item.products.name} × ${item.quantity}`)
+    .join("\n");
+
+  const waText = [
+    "🛍️ *New Shopping Kraft Order*",
+    "",
+    `Order: *${order.order_number}*`,
+    `Payment: ${methodLabel} (prepaid)`,
+    `Total: Rs ${total.toLocaleString("en-PK")}`,
+    "",
+    `Name: ${parsed.data.full_name}`,
+    `Phone: ${parsed.data.phone}`,
+    `Address: ${parsed.data.line1}${parsed.data.line2 ? `, ${parsed.data.line2}` : ""}, ${parsed.data.city}, ${parsed.data.province}`,
+    "",
+    "Items:",
+    itemLines,
+    parsed.data.notes ? `\nNotes: ${parsed.data.notes}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const whatsappUrl = `https://wa.me/923135009138?text=${encodeURIComponent(waText)}`;
+
+  return {
+    success: true,
+    orderNumber: order.order_number,
+    orderId: order.id,
+    whatsappUrl,
+  };
 }
 
 async function restoreOrderStock(orderId: string, actorId: string) {

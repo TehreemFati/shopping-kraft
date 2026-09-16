@@ -43,7 +43,7 @@ export const checkoutSchema = z.object({
   city: z.string().min(1, "City is required"),
   province: z.string().min(1, "Province is required"),
   postal_code: z.string().optional(),
-  payment_method: z.enum(["cod", "bank_transfer"]),
+  payment_method: z.enum(["bank_transfer", "jazzcash", "easypaisa"]),
   coupon_code: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -86,6 +86,14 @@ export const settingsSchema = z.object({
     account_title: z.string(),
     account_number: z.string(),
     iban: z.string(),
+  }),
+  jazzcash_account: z.object({
+    account_title: z.string(),
+    account_number: z.string(),
+  }),
+  easypaisa_account: z.object({
+    account_title: z.string(),
+    account_number: z.string(),
   }),
 });
 

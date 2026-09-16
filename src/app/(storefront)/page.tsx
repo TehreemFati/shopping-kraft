@@ -132,11 +132,11 @@ export default async function HomePage() {
               Why Shopping Kraft
             </p>
             <h2 className="mt-3 font-display text-3xl text-white md:text-5xl">
-              Good gifts for good relations.
+              Good Gifts for Good Relations
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-white/80 md:text-base">
-              Custom wooden baskets, hampers, and occasion gifts — curated with
-              care and delivered across Pakistan.
+              Gift boxes, bouquets, baskets, and occasion presents — curated
+              with care and delivered across Pakistan.
             </p>
           </div>
           <Link

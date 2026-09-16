@@ -146,6 +146,14 @@ export async function updateSettings(formData: FormData) {
       account_number: formData.get("account_number"),
       iban: formData.get("iban"),
     },
+    jazzcash_account: {
+      account_title: formData.get("jazzcash_account_title"),
+      account_number: formData.get("jazzcash_account_number"),
+    },
+    easypaisa_account: {
+      account_title: formData.get("easypaisa_account_title"),
+      account_number: formData.get("easypaisa_account_number"),
+    },
   });
 
   if (!parsed.success) {
@@ -159,6 +167,8 @@ export async function updateSettings(formData: FormData) {
     { key: "contact_email", value: parsed.data.contact_email },
     { key: "contact_phone", value: parsed.data.contact_phone },
     { key: "bank_account", value: parsed.data.bank_account },
+    { key: "jazzcash_account", value: parsed.data.jazzcash_account },
+    { key: "easypaisa_account", value: parsed.data.easypaisa_account },
   ];
 
   for (const entry of entries) {
