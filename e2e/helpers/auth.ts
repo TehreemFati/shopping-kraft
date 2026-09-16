@@ -25,7 +25,7 @@ export async function loginAsCustomer(page: Page) {
   const existing = customerCredentials();
   if (existing) {
     await login(page, existing.email, existing.password);
-    await page.waitForURL((url) => !url.pathname.includes("/login"), {
+    await page.waitForURL((url) => url.pathname === "/", {
       timeout: 30_000,
     });
     return existing;
@@ -40,7 +40,7 @@ export async function loginAsCustomer(page: Page) {
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByLabel("Confirm Password").fill(password);
   await page.getByRole("button", { name: "Register" }).click();
-  await page.waitForURL((url) => !url.pathname.includes("/register"), {
+  await page.waitForURL((url) => url.pathname.startsWith("/account"), {
     timeout: 30_000,
   });
   return { email, password };

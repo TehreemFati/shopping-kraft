@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { getCartItems } from "@/lib/actions/cart";
-import { getAllSettings } from "@/lib/queries/storefront";
+import { getAllSettings, getCurrentUser } from "@/lib/queries/storefront";
+import { isAdminOrStaff } from "@/lib/auth/roles";
 import { CheckoutForm } from "@/components/storefront/CheckoutForm";
 import { PageBreadcrumbs } from "@/components/storefront/PageBreadcrumbs";
 
@@ -18,6 +20,11 @@ type BankAccount = {
 };
 
 export default async function CheckoutPage() {
+  const currentUser = await getCurrentUser();
+  if (isAdminOrStaff(currentUser?.profile?.role)) {
+    redirect("/admin");
+  }
+
   const [items, settings] = await Promise.all([
     getCartItems(),
     getAllSettings(),

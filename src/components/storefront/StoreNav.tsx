@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
+import { logout } from "@/lib/actions/auth";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +25,12 @@ export type NavCategory = {
   slug: string;
 };
 
+export type StoreNavUser = {
+  fullName: string | null;
+  email: string | null;
+  role: "customer" | "admin" | "staff";
+} | null;
+
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p className="mt-5 mb-1 px-3 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase first:mt-0">
@@ -35,11 +42,14 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function StoreNav({
   categories,
   campaigns,
+  user = null,
 }: {
   categories: NavCategory[];
   campaigns: NavCampaign[];
+  user?: StoreNavUser;
 }) {
   const [open, setOpen] = useState(false);
+  const isStaff = user?.role === "admin" || user?.role === "staff";
 
   function NavLink({
     href,
@@ -66,7 +76,7 @@ export function StoreNav({
           <button
             type="button"
             aria-label="Open menu"
-            className="flex size-10 items-center justify-center text-white/90 transition hover:bg-white/10 hover:text-white"
+            className="flex size-10 shrink-0 items-center justify-center text-white/90 transition hover:bg-white/10 hover:text-white"
           />
         }
       >
@@ -77,8 +87,51 @@ export function StoreNav({
           <SheetTitle className="font-display text-xl text-kraft-ink">
             Menu
           </SheetTitle>
+          {user ? (
+            <p className="truncate text-sm text-muted-foreground">
+              {user.fullName?.trim() || user.email || "Account"}
+            </p>
+          ) : null}
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto px-2 py-4">
+          <SectionLabel>Account</SectionLabel>
+          {!user ? (
+            <>
+              <NavLink href="/login">Login</NavLink>
+              <NavLink href="/register">Register</NavLink>
+            </>
+          ) : isStaff ? (
+            <>
+              <NavLink href="/admin">Admin Dashboard</NavLink>
+              <button
+                type="button"
+                className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-kraft-ink transition hover:bg-muted"
+                onClick={() => {
+                  setOpen(false);
+                  void logout();
+                }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink href="/account">Profile</NavLink>
+              <NavLink href="/account/orders">Orders</NavLink>
+              <NavLink href="/account/addresses">Addresses</NavLink>
+              <button
+                type="button"
+                className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-kraft-ink transition hover:bg-muted"
+                onClick={() => {
+                  setOpen(false);
+                  void logout();
+                }}
+              >
+                Logout
+              </button>
+            </>
+          )}
+
           <SectionLabel>Browse</SectionLabel>
           <NavLink href="/shop">Full catalog</NavLink>
           <NavLink href="/shop?featured=1">Featured</NavLink>

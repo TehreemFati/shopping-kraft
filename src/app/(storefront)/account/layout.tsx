@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/queries/storefront";
+import { isAdminOrStaff } from "@/lib/auth/roles";
 import { logout } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { PageBreadcrumbs } from "@/components/storefront/PageBreadcrumbs";
@@ -12,6 +13,12 @@ export default async function AccountLayout({
 }) {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/login?redirect=/account");
+  if (isAdminOrStaff(currentUser.profile?.role)) redirect("/admin");
+
+  const displayName =
+    currentUser.profile?.full_name?.trim() ||
+    currentUser.user.email?.split("@")[0] ||
+    "there";
 
   const nav = [
     { href: "/account", label: "Profile" },
@@ -27,8 +34,11 @@ export default async function AccountLayout({
           { label: "Account" },
         ]}
       />
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">My Account</h1>
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">My Account</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Hi, {displayName}</p>
+        </div>
         <form action={logout}>
           <Button variant="outline" type="submit">
             Logout

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { mergeGuestCart } from "@/lib/actions/cart";
+import { isAdminOrStaff } from "@/lib/auth/roles";
 import { loginSchema, registerSchema } from "@/lib/validators/schemas";
 import { settingsSchema } from "@/lib/validators/schemas";
 import type { AdminCustomer } from "@/types/database";
@@ -23,10 +24,18 @@ export async function login(formData: FormData) {
 
   if (error) return { error: { _form: [error.message] } };
 
-  await mergeGuestCart(data.user.id);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
 
-  const redirectTo = (formData.get("redirect") as string) || "/";
-  redirect(redirectTo);
+  if (isAdminOrStaff(profile?.role)) {
+    redirect("/admin");
+  }
+
+  await mergeGuestCart(data.user.id);
+  redirect("/");
 }
 
 export async function register(formData: FormData) {

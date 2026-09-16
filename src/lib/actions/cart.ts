@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { isAdminOrStaff } from "@/lib/auth/roles";
 import { getEffectivePrice } from "@/lib/utils/format";
 import type { CartItemWithProduct, Product, Inventory, CartItem } from "@/types/database";
 
@@ -115,6 +116,21 @@ export async function getCartCount(): Promise<number> {
 }
 
 export async function addToCart(productId: string, quantity = 1) {
+  const supabaseAuth = await createClient();
+  const {
+    data: { user },
+  } = await supabaseAuth.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabaseAuth
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (isAdminOrStaff(profile?.role)) {
+      return { error: "Admin accounts cannot place shop orders" };
+    }
+  }
+
   const { supabase, cartId } = await getOrCreateCart();
 
   const { data: productData } = await supabase

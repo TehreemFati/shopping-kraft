@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { requirePermission, logAdminAction } from "@/lib/auth/session";
+import { isAdminOrStaff } from "@/lib/auth/roles";
 import { checkoutSchema } from "@/lib/validators/schemas";
 import { getCartItems, clearCart } from "@/lib/actions/cart";
 import { validateCouponCode } from "@/lib/actions/coupons";
@@ -20,6 +21,19 @@ export async function createOrder(formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (isAdminOrStaff(profile?.role)) {
+      return {
+        error: { _form: ["Admin accounts cannot place shop orders"] },
+      };
+    }
+  }
 
   const parsed = checkoutSchema.safeParse({
     full_name: formData.get("full_name"),

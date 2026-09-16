@@ -42,7 +42,12 @@ export function BrandLogo({
         />
       </span>
       {showWordmark ? (
-        <span className="font-display text-xl tracking-tight text-white sm:text-2xl">
+        <span
+          className={cn(
+            "font-display text-xl tracking-tight text-white sm:text-2xl",
+            size === "sm" && "hidden sm:inline",
+          )}
+        >
           Shopping <span className="text-kraft-citrus">Kraft</span>
         </span>
       ) : null}

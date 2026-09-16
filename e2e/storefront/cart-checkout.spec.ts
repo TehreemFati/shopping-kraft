@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { loginAsAdmin } from "../helpers/auth";
+import {
+  loginAsAdmin,
+  loginAsCustomer,
+  logoutFromAdmin,
+} from "../helpers/auth";
 import {
   createCategoryViaAdmin,
   createProductViaAdmin,
@@ -9,13 +13,15 @@ import {
 } from "../helpers/admin";
 
 test.describe("Storefront cart & checkout", () => {
-  test("add to cart, update quantity, checkout COD", async ({ page }) => {
+  test("add to cart, update quantity, checkout JazzCash", async ({ page }) => {
     await loginAsAdmin(page);
     const { name: categoryName } = await createCategoryViaAdmin(page);
     const { name: productName, slug } = await createProductViaAdmin(
       page,
       categoryName,
     );
+    await logoutFromAdmin(page);
+    await loginAsCustomer(page);
 
     try {
       await page.goto(`/product/${slug}`);
@@ -51,6 +57,7 @@ test.describe("Storefront cart & checkout", () => {
           .first(),
       ).toBeVisible({ timeout: 45_000 });
     } finally {
+      await loginAsAdmin(page);
       await softDeleteProductViaAdmin(page, productName);
       await softDeleteCategoryViaAdmin(page, categoryName);
     }
@@ -63,6 +70,8 @@ test.describe("Storefront cart & checkout", () => {
       page,
       categoryName,
     );
+    await logoutFromAdmin(page);
+    await loginAsCustomer(page);
 
     try {
       await page.goto(`/product/${slug}`);
@@ -81,6 +90,7 @@ test.describe("Storefront cart & checkout", () => {
         timeout: 20_000,
       });
     } finally {
+      await loginAsAdmin(page);
       await softDeleteProductViaAdmin(page, productName);
       await softDeleteCategoryViaAdmin(page, categoryName);
     }

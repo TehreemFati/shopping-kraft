@@ -1,10 +1,18 @@
+import { redirect } from "next/navigation";
 import { getCartItems } from "@/lib/actions/cart";
+import { getCurrentUser } from "@/lib/queries/storefront";
+import { isAdminOrStaff } from "@/lib/auth/roles";
 import { CartItems } from "@/components/storefront/CartItems";
 import { PageBreadcrumbs } from "@/components/storefront/PageBreadcrumbs";
 
 export const metadata = { title: "Cart" };
 
 export default async function CartPage() {
+  const currentUser = await getCurrentUser();
+  if (isAdminOrStaff(currentUser?.profile?.role)) {
+    redirect("/admin");
+  }
+
   const items = await getCartItems();
 
   return (
