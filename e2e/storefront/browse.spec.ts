@@ -3,6 +3,8 @@ import { loginAsAdmin } from "../helpers/auth";
 import {
   createCategoryViaAdmin,
   createProductViaAdmin,
+  softDeleteCategoryViaAdmin,
+  softDeleteProductViaAdmin,
 } from "../helpers/admin";
 
 test.describe("Storefront home & browse", () => {
@@ -18,7 +20,12 @@ test.describe("Storefront home & browse", () => {
 
   test("shop page loads", async ({ page }) => {
     await page.goto("/shop");
-    await expect(page.getByRole("heading", { name: /Shop|Catalog|Products/i }).or(page.locator("h1")).first()).toBeVisible();
+    await expect(
+      page
+        .getByRole("heading", { name: /Shop|Catalog|Products/i })
+        .or(page.locator("h1"))
+        .first(),
+    ).toBeVisible();
   });
 
   test("search page loads", async ({ page }) => {
@@ -35,12 +42,23 @@ test.describe("Storefront home & browse", () => {
     const { name: productName, slug: productSlug } =
       await createProductViaAdmin(page, categoryName);
 
-    await page.goto(`/category/${categorySlug}`);
-    await expect(page.getByRole("heading", { name: categoryName })).toBeVisible();
-    await expect(page.getByText(productName).first()).toBeVisible();
+    try {
+      await page.goto(`/category/${categorySlug}`);
+      await expect(
+        page.getByRole("heading", { name: categoryName }),
+      ).toBeVisible();
+      await expect(page.getByText(productName).first()).toBeVisible();
 
-    await page.goto(`/product/${productSlug}`);
-    await expect(page.getByRole("heading", { name: productName })).toBeVisible();
-    await expect(page.getByText(/Rs|PKR|1,?999|2,?499/i).first()).toBeVisible();
+      await page.goto(`/product/${productSlug}`);
+      await expect(
+        page.getByRole("heading", { name: productName }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/Rs|PKR|1,?999|2,?499/i).first(),
+      ).toBeVisible();
+    } finally {
+      await softDeleteProductViaAdmin(page, productName);
+      await softDeleteCategoryViaAdmin(page, categoryName);
+    }
   });
 });

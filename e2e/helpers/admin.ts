@@ -26,10 +26,23 @@ export async function uploadFixtureImage(page: Page) {
   });
 }
 
+async function idFromEditHref(page: Page, name: string, kind: "categories" | "products") {
+  const href = await page
+    .getByRole("row")
+    .filter({ hasText: name })
+    .locator(`a[href*="/admin/${kind}/"][href*="/edit"]`)
+    .getAttribute("href");
+  const match = href?.match(new RegExp(`/admin/${kind}/([^/]+)/edit`));
+  if (!match?.[1]) {
+    throw new Error(`Could not resolve ${kind} id for "${name}"`);
+  }
+  return match[1];
+}
+
 export async function createCategoryViaAdmin(
   page: Page,
   name?: string,
-): Promise<{ name: string; slug: string }> {
+): Promise<{ id: string; name: string; slug: string }> {
   const suffix = uniqueSuffix();
   const categoryName = name ?? `E2E Gift Baskets ${suffix}`;
   await page.goto("/admin/categories/new");
@@ -43,14 +56,15 @@ export async function createCategoryViaAdmin(
   await page.getByRole("button", { name: /Create Category|Save/i }).click();
   await expect(page).toHaveURL(/\/admin\/categories/, { timeout: 30_000 });
   await expect(page.getByText(categoryName)).toBeVisible();
-  return { name: categoryName, slug };
+  const id = await idFromEditHref(page, categoryName, "categories");
+  return { id, name: categoryName, slug };
 }
 
 export async function createProductViaAdmin(
   page: Page,
   categoryName: string,
   productName?: string,
-): Promise<{ name: string; slug: string }> {
+): Promise<{ id: string; name: string; slug: string }> {
   const suffix = uniqueSuffix();
   const name = productName ?? `E2E Baby Boy Wooden Basket ${suffix}`;
   await page.goto("/admin/products/new");
@@ -71,7 +85,34 @@ export async function createProductViaAdmin(
   await page.getByRole("button", { name: /Save Product|Save/i }).click();
   await expect(page).toHaveURL(/\/admin\/products/, { timeout: 30_000 });
   await expect(page.getByText(name)).toBeVisible();
-  return { name, slug };
+  const id = await idFromEditHref(page, name, "products");
+  return { id, name, slug };
+}
+
+async function softDeleteRowByName(
+  page: Page,
+  listPath: string,
+  name: string,
+) {
+  await page.goto(listPath);
+  const row = page.getByRole("row").filter({ hasText: name });
+  if ((await row.count()) === 0) return;
+  page.once("dialog", (d) => d.accept());
+  await row
+    .locator("button")
+    .filter({ has: page.locator("svg.lucide-trash-2") })
+    .click();
+  await expect(page.getByRole("row").filter({ hasText: name })).toHaveCount(0, {
+    timeout: 20_000,
+  });
+}
+
+export async function softDeleteProductViaAdmin(page: Page, name: string) {
+  await softDeleteRowByName(page, "/admin/products", name);
+}
+
+export async function softDeleteCategoryViaAdmin(page: Page, name: string) {
+  await softDeleteRowByName(page, "/admin/categories", name);
 }
 
 export async function expectToast(page: Page, text: string | RegExp) {

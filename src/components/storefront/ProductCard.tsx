@@ -23,10 +23,18 @@ export function ProductCard({
       href={`/product/${product.slug}`}
       className={cn(
         "group block",
-        layout === "slider" && "w-[220px] shrink-0 snap-start sm:w-[240px]",
+        layout === "slider" &&
+          "w-[220px] shrink-0 snap-start bg-transparent sm:w-[240px]",
       )}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-kraft-mist">
+      <div
+        className={cn(
+          "relative overflow-hidden",
+          layout === "slider"
+            ? "aspect-square bg-transparent"
+            : "aspect-[4/5] bg-kraft-mist",
+        )}
+      >
         {primaryImage ? (
           <Image
             src={primaryImage.url}

@@ -20,7 +20,7 @@ export function CategorySlider({ categories }: { categories: Category[] }) {
         <Link
           key={cat.id}
           href={`/category/${cat.slug}`}
-          className="group relative h-56 w-[200px] shrink-0 snap-start overflow-hidden sm:w-[240px]"
+          className="group relative h-56 w-[220px] shrink-0 snap-start overflow-hidden sm:w-[240px]"
         >
           {cat.image_url ? (
             <Image

@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "catalog:cleanup": "node --env-file=.env.local scripts/cleanup-e2e-catalog.mjs",
+    "catalog:seed": "node --env-file=.env.local scripts/seed-catalog.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

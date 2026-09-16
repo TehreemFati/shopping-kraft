@@ -76,6 +76,8 @@ npm run dev
 3. Add environment variables (same as `.env.local.example`)
 4. Deploy
 
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system design, Supabase integration, and file purposes.
+
 ## Project Structure
 
 ```

@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function SectionHeading({
   title,
@@ -56,36 +57,37 @@ export function HorizontalSlider({
     el.scrollBy({ left: dir * amount, behavior: "smooth" });
   }
 
-  return (
-    <div className="relative">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-12 bg-gradient-to-r from-background to-transparent md:block" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-12 bg-gradient-to-l from-background to-transparent md:block" />
+  const arrowClass =
+    "absolute top-1/2 z-10 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-kraft-ink/15 bg-white/90 text-kraft-ink shadow-sm backdrop-blur-sm transition duration-300 hover:scale-105 hover:border-kraft-ink hover:bg-kraft-ink hover:text-kraft-citrus hover:shadow-md active:scale-95 md:flex";
 
+  return (
+    <div className="relative md:-mx-14 md:px-14">
       <button
         type="button"
         aria-label="Scroll left"
         onClick={() => scroll(-1)}
-        className="absolute top-1/2 left-0 z-20 hidden size-10 -translate-y-1/2 items-center justify-center border border-border bg-card/90 text-foreground backdrop-blur transition hover:bg-card md:flex"
+        className={cn(arrowClass, "left-0")}
       >
-        <ChevronLeft className="size-5" />
-      </button>
-      <button
-        type="button"
-        aria-label="Scroll right"
-        onClick={() => scroll(1)}
-        className="absolute top-1/2 right-0 z-20 hidden size-10 -translate-y-1/2 items-center justify-center border border-border bg-card/90 text-foreground backdrop-blur transition hover:bg-card md:flex"
-      >
-        <ChevronRight className="size-5" />
+        <ChevronLeft className="size-5" strokeWidth={2.25} />
       </button>
 
       <div
         ref={ref}
         role="region"
         aria-label={ariaLabel}
-        className="scrollbar-none flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 md:px-12"
+        className="scrollbar-none flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:gap-6"
       >
         {children}
       </div>
+
+      <button
+        type="button"
+        aria-label="Scroll right"
+        onClick={() => scroll(1)}
+        className={cn(arrowClass, "right-0")}
+      >
+        <ChevronRight className="size-5" strokeWidth={2.25} />
+      </button>
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { loginAsAdmin } from "../helpers/auth";
 import {
   createCategoryViaAdmin,
   createProductViaAdmin,
+  softDeleteCategoryViaAdmin,
+  softDeleteProductViaAdmin,
 } from "../helpers/admin";
 import { uniqueSuffix } from "../helpers/env";
 
@@ -19,29 +21,34 @@ test.describe("Admin sales", () => {
     );
 
     const saleName = `E2E Flash Sale ${uniqueSuffix()}`;
-    await page.goto("/admin/sales/new");
-    await page.getByLabel("Name").fill(saleName);
-    await page.locator("#sale_type").selectOption("flash");
+    try {
+      await page.goto("/admin/sales/new");
+      await page.getByLabel("Name").fill(saleName);
+      await page.locator("#sale_type").selectOption("flash");
 
-    const start = new Date();
-    start.setMinutes(start.getMinutes() - 10);
-    const end = new Date();
-    end.setDate(end.getDate() + 7);
-    const toLocal = (d: Date) => {
-      const pad = (n: number) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    };
-    await page.getByLabel("Starts at").fill(toLocal(start));
-    await page.getByLabel("Ends at").fill(toLocal(end));
-    await page.getByLabel("Description").fill("E2E sale campaign");
+      const start = new Date();
+      start.setMinutes(start.getMinutes() - 10);
+      const end = new Date();
+      end.setDate(end.getDate() + 7);
+      const toLocal = (d: Date) => {
+        const pad = (n: number) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+      await page.getByLabel("Starts at").fill(toLocal(start));
+      await page.getByLabel("Ends at").fill(toLocal(end));
+      await page.getByLabel("Description").fill("E2E sale campaign");
 
-    const productRow = page
-      .locator("div.flex.flex-wrap.items-center")
-      .filter({ hasText: productName });
-    await productRow.locator('[data-slot="checkbox"]').click();
+      const productRow = page
+        .locator("div.flex.flex-wrap.items-center")
+        .filter({ hasText: productName });
+      await productRow.locator('[data-slot="checkbox"]').click();
 
-    await page.getByRole("button", { name: "Create sale" }).click();
-    await expect(page).toHaveURL(/\/admin\/sales/, { timeout: 30_000 });
-    await expect(page.getByText(saleName)).toBeVisible();
+      await page.getByRole("button", { name: "Create sale" }).click();
+      await expect(page).toHaveURL(/\/admin\/sales/, { timeout: 30_000 });
+      await expect(page.getByText(saleName)).toBeVisible();
+    } finally {
+      await softDeleteProductViaAdmin(page, productName);
+      await softDeleteCategoryViaAdmin(page, categoryName);
+    }
   });
 });
