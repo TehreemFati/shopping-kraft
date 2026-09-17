@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getAdminProducts } from "@/lib/actions/products";
 import { ProductsTable } from "@/components/admin/ProductsTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { STATUS_FILTER_FIELD } from "@/lib/admin/status-filter";
 import {
   firstParam,
   parsePage,
@@ -37,12 +40,15 @@ export default async function AdminProductsPage({
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Products</h1>
-        <Button asChild>
-          <Link href="/admin/products/new">Add Product</Link>
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Products"
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Products" }]}
+        actions={
+          <Button variant="kraft" asChild>
+            <Link href="/admin/products/new">Add Product</Link>
+          </Button>
+        }
+      />
 
       <AdminFiltersBar
         fields={[
@@ -52,16 +58,7 @@ export default async function AdminProductsPage({
             label: "Search",
             placeholder: "Name, SKU, slug…",
           },
-          {
-            type: "select",
-            name: "status",
-            label: "Status",
-            options: [
-              { value: "all", label: "All statuses" },
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
-            ],
-          },
+          STATUS_FILTER_FIELD,
           {
             type: "select",
             name: "featured",
@@ -76,7 +73,11 @@ export default async function AdminProductsPage({
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">No products found.</p>
+        <EmptyState
+          title="No products found."
+          actionLabel="Add Product"
+          actionHref="/admin/products/new"
+        />
       ) : (
         <>
           <ProductsTable products={result.data} />

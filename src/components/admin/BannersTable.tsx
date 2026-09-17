@@ -1,10 +1,5 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import Link from "next/link";
-import { Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -14,26 +9,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { AdminRowActions } from "@/components/admin/AdminRowActions";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { softDeleteBanner } from "@/lib/actions/banners";
-import { toast } from "sonner";
 import type { Banner } from "@/types/database";
 
 export function BannersTable({ banners }: { banners: Banner[] }) {
-  const [isPending, startTransition] = useTransition();
-  const [pendingDelete, setPendingDelete] = useState<{
-    id: string;
-    title: string;
-  } | null>(null);
-
-  function confirmDelete() {
-    if (!pendingDelete) return;
-    const { id } = pendingDelete;
-    startTransition(async () => {
-      await softDeleteBanner(id);
-      toast.success("Banner deleted");
-      setPendingDelete(null);
-    });
-  }
+  const { isPending, requestDelete, dialogProps } = useConfirmDelete({
+    onDelete: softDeleteBanner,
+    successMessage: "Banner deleted",
+    title: "Delete banner?",
+    descriptionTemplate:
+      "Delete “{label}”? It will no longer appear on the homepage.",
+  });
 
   return (
     <>
@@ -52,45 +41,22 @@ export function BannersTable({ banners }: { banners: Banner[] }) {
               <TableCell className="font-medium">{banner.title}</TableCell>
               <TableCell>{banner.sort_order}</TableCell>
               <TableCell>
-                <Badge variant={banner.is_active ? "default" : "secondary"}>
-                  {banner.is_active ? "Active" : "Inactive"}
-                </Badge>
+                <StatusBadge active={banner.is_active} />
               </TableCell>
-              <TableCell className="space-x-1 text-right">
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/admin/banners/${banner.id}/edit`}>Edit</Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={isPending}
-                  onClick={() =>
-                    setPendingDelete({ id: banner.id, title: banner.title })
-                  }
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <TableCell className="text-right">
+                <AdminRowActions
+                  editHref={`/admin/banners/${banner.id}/edit`}
+                  editStyle="text"
+                  deleteDisabled={isPending}
+                  onDelete={() => requestDelete(banner.id, banner.title)}
+                />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Delete banner?"
-        description={
-          pendingDelete
-            ? `Delete “${pendingDelete.title}”? It will no longer appear on the homepage.`
-            : undefined
-        }
-        confirmLabel="Delete"
-        loading={isPending}
-        onConfirm={confirmDelete}
-      />
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }

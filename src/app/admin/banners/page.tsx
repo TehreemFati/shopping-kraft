@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getAdminBanners } from "@/lib/actions/banners";
 import { BannersTable } from "@/components/admin/BannersTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { STATUS_FILTER_FIELD } from "@/lib/admin/status-filter";
 import {
   firstParam,
   parsePage,
@@ -32,12 +35,15 @@ export default async function AdminBannersPage({
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Banners</h1>
-        <Button asChild>
-          <Link href="/admin/banners/new">Add Banner</Link>
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Banners"
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Banners" }]}
+        actions={
+          <Button variant="kraft" asChild>
+            <Link href="/admin/banners/new">Add Banner</Link>
+          </Button>
+        }
+      />
 
       <AdminFiltersBar
         fields={[
@@ -47,21 +53,16 @@ export default async function AdminBannersPage({
             label: "Search",
             placeholder: "Title or subtitle…",
           },
-          {
-            type: "select",
-            name: "status",
-            label: "Status",
-            options: [
-              { value: "all", label: "All statuses" },
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
-            ],
-          },
+          STATUS_FILTER_FIELD,
         ]}
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">No banners found.</p>
+        <EmptyState
+          title="No banners found."
+          actionLabel="Add Banner"
+          actionHref="/admin/banners/new"
+        />
       ) : (
         <>
           <BannersTable banners={result.data} />

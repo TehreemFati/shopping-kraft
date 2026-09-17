@@ -1,7 +1,9 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import { getAdminOrders } from "@/lib/actions/orders";
 import { OrdersTable } from "@/components/admin/OrdersTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import {
   firstParam,
   parsePage,
@@ -60,7 +62,10 @@ export default async function AdminOrdersPage({
 
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold">Orders</h1>
+      <AdminPageHeader
+        title="Orders"
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Orders" }]}
+      />
 
       <AdminFiltersBar
         fields={[
@@ -100,7 +105,7 @@ export default async function AdminOrdersPage({
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">No orders found.</p>
+        <EmptyState title="No orders found." />
       ) : (
         <>
           <OrdersTable orders={result.data} />

@@ -123,7 +123,7 @@ export function ProfileForm({
             <Button
               type="submit"
               disabled={isPending}
-              className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+              variant="kraft"
             >
               {isPending ? "Saving..." : "Save changes"}
             </Button>
@@ -137,27 +137,29 @@ export function ProfileForm({
       >
         <form
           onSubmit={handlePasswordSubmit}
+          noValidate
           className="grid max-w-xl gap-4 sm:grid-cols-2"
         >
           <StoreFormField
             label="Current password"
             htmlFor="current_password"
             className="sm:col-span-2"
+            required
           >
             <PasswordInput
               id="current_password"
               name="current_password"
-              required
+              aria-required
               autoComplete="current-password"
               placeholder="Enter current password"
               className={storeInputClassName}
             />
           </StoreFormField>
-          <StoreFormField label="New password" htmlFor="password">
+          <StoreFormField label="New password" htmlFor="password" required>
             <PasswordInput
               id="password"
               name="password"
-              required
+              aria-required
               autoComplete="new-password"
               placeholder="New password"
               className={storeInputClassName}
@@ -166,11 +168,12 @@ export function ProfileForm({
           <StoreFormField
             label="Confirm new password"
             htmlFor="confirm_password"
+            required
           >
             <PasswordInput
               id="confirm_password"
               name="confirm_password"
-              required
+              aria-required
               autoComplete="new-password"
               placeholder="Confirm new password"
               className={storeInputClassName}

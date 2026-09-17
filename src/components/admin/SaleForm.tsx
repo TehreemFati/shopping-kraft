@@ -5,15 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { NumericInput } from "@/components/ui/numeric-input";
 import { SlugInput } from "@/components/admin/SlugInput";
 import {
   AdminFormShell,
   AdminFormSection,
   AdminFormActions,
   FieldError,
+  FieldLabel,
 } from "@/components/admin/AdminFormShell";
 import {
   createSaleCampaign,
@@ -104,15 +105,14 @@ export function SaleForm({
 
   return (
     <AdminFormShell>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <AdminFormSection title="Campaign">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <FieldLabel htmlFor="name" required>Name</FieldLabel>
               <Input
                 id="name"
                 name="name"
-                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 aria-invalid={!!errors.name}
@@ -122,13 +122,14 @@ export function SaleForm({
             <div>
               <SlugInput
                 name="slug"
+                required
                 sourceValue={name}
                 defaultValue={sale?.slug}
               />
               <FieldError message={errors.slug} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sale_type">Sale type</Label>
+              <FieldLabel htmlFor="sale_type" required>Sale type</FieldLabel>
               <select
                 id="sale_type"
                 name="sale_type"
@@ -149,10 +150,10 @@ export function SaleForm({
                 checked={isActive}
                 onCheckedChange={(v) => setIsActive(Boolean(v))}
               />
-              <Label htmlFor="is_active">Active</Label>
+              <FieldLabel htmlFor="is_active">Active</FieldLabel>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="starts_at">Starts at</Label>
+              <FieldLabel htmlFor="starts_at">Starts at</FieldLabel>
               <Input
                 id="starts_at"
                 name="starts_at"
@@ -163,7 +164,7 @@ export function SaleForm({
               <FieldError message={errors.starts_at} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ends_at">Ends at</Label>
+              <FieldLabel htmlFor="ends_at">Ends at</FieldLabel>
               <Input
                 id="ends_at"
                 name="ends_at"
@@ -176,7 +177,7 @@ export function SaleForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <FieldLabel htmlFor="description">Description</FieldLabel>
             <Textarea
               id="description"
               name="description"
@@ -221,17 +222,15 @@ export function SaleForm({
                       </p>
                     </div>
                     {checked ? (
-                      <Input
+                      <NumericInput
                         className="w-28"
-                        type="number"
-                        min={0}
-                        step="1"
+                        decimal
                         placeholder="Campaign $"
                         value={prices[p.id] ?? ""}
-                        onChange={(e) =>
+                        onValueChange={(v) =>
                           setPrices((prev) => ({
                             ...prev,
-                            [p.id]: e.target.value,
+                            [p.id]: v,
                           }))
                         }
                       />
@@ -248,7 +247,7 @@ export function SaleForm({
           <Button
             type="submit"
             disabled={isPending}
-            className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+            variant="kraft"
           >
             {isPending
               ? "Saving…"

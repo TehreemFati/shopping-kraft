@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { NumericInput } from "@/components/ui/numeric-input";
 import {
   Table,
   TableBody,
@@ -18,11 +18,12 @@ import type { InventoryWithProduct } from "@/types/database";
 export function InventoryTable({ items }: { items: InventoryWithProduct[] }) {
   const [isPending, startTransition] = useTransition();
   const [editing, setEditing] = useState<string | null>(null);
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [quantities, setQuantities] = useState<Record<string, string>>({});
 
   function handleSave(id: string) {
-    const qty = quantities[id];
-    if (qty === undefined || qty < 0) return;
+    const raw = quantities[id];
+    const qty = raw !== undefined ? Number(raw) : undefined;
+    if (qty === undefined || Number.isNaN(qty) || qty < 0) return;
 
     startTransition(async () => {
       const result = await adjustStock(id, qty, "manual adjustment");
@@ -53,14 +54,14 @@ export function InventoryTable({ items }: { items: InventoryWithProduct[] }) {
             <TableCell>{item.products?.sku ?? "—"}</TableCell>
             <TableCell>
               {editing === item.id ? (
-                <Input
-                  type="number"
+                <NumericInput
+                  decimal={false}
                   className="w-24"
-                  value={quantities[item.id] ?? item.quantity}
-                  onChange={(e) =>
+                  value={quantities[item.id] ?? String(item.quantity)}
+                  onValueChange={(v) =>
                     setQuantities({
                       ...quantities,
-                      [item.id]: Number(e.target.value),
+                      [item.id]: v,
                     })
                   }
                 />
@@ -98,7 +99,10 @@ export function InventoryTable({ items }: { items: InventoryWithProduct[] }) {
                   variant="outline"
                   onClick={() => {
                     setEditing(item.id);
-                    setQuantities({ ...quantities, [item.id]: item.quantity });
+                    setQuantities({
+                      ...quantities,
+                      [item.id]: String(item.quantity),
+                    });
                   }}
                 >
                   Adjust

@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -14,26 +12,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { softDeleteSaleCampaign } from "@/lib/actions/sales";
-import { toast } from "sonner";
 import type { SaleCampaign } from "@/types/database";
 
 export function SalesTable({ campaigns }: { campaigns: SaleCampaign[] }) {
-  const [isPending, startTransition] = useTransition();
-  const [pendingDelete, setPendingDelete] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-
-  function confirmDelete() {
-    if (!pendingDelete) return;
-    const { id } = pendingDelete;
-    startTransition(async () => {
-      await softDeleteSaleCampaign(id);
-      toast.success("Sale deleted");
-      setPendingDelete(null);
-    });
-  }
+  const { isPending, requestDelete, dialogProps } = useConfirmDelete({
+    onDelete: softDeleteSaleCampaign,
+    successMessage: "Sale deleted",
+    title: "Delete sale?",
+    descriptionTemplate:
+      "Delete sale “{label}”? Campaign pricing will stop applying.",
+  });
 
   return (
     <>
@@ -62,9 +53,7 @@ export function SalesTable({ campaigns }: { campaigns: SaleCampaign[] }) {
                   : "—"}
               </TableCell>
               <TableCell>
-                <Badge variant={sale.is_active ? "default" : "secondary"}>
-                  {sale.is_active ? "Active" : "Inactive"}
-                </Badge>
+                <StatusBadge active={sale.is_active} />
               </TableCell>
               <TableCell className="space-x-1 text-right">
                 <Button variant="outline" size="sm" asChild>
@@ -74,9 +63,7 @@ export function SalesTable({ campaigns }: { campaigns: SaleCampaign[] }) {
                   variant="ghost"
                   size="icon"
                   disabled={isPending}
-                  onClick={() =>
-                    setPendingDelete({ id: sale.id, name: sale.name })
-                  }
+                  onClick={() => requestDelete(sale.id, sale.name)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -86,21 +73,7 @@ export function SalesTable({ campaigns }: { campaigns: SaleCampaign[] }) {
         </TableBody>
       </Table>
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Delete sale?"
-        description={
-          pendingDelete
-            ? `Delete sale “${pendingDelete.name}”? Campaign pricing will stop applying.`
-            : undefined
-        }
-        confirmLabel="Delete"
-        loading={isPending}
-        onConfirm={confirmDelete}
-      />
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }

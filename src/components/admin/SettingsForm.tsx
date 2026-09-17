@@ -3,12 +3,13 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { NumericInput } from "@/components/ui/numeric-input";
 import {
   AdminFormShell,
   AdminFormSection,
   AdminFormActions,
   FieldError,
+  FieldLabel,
 } from "@/components/admin/AdminFormShell";
 import { updateSettings } from "@/lib/actions/auth";
 import {
@@ -50,62 +51,57 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
   return (
     <AdminFormShell>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <AdminFormSection title="Store">
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2 lg:col-span-2">
-              <Label htmlFor="store_name">Store Name</Label>
+              <FieldLabel htmlFor="store_name" required>Store Name</FieldLabel>
               <Input
                 id="store_name"
                 name="store_name"
                 defaultValue={String(settings.store_name ?? "")}
-                required
                 aria-invalid={!!errors.store_name}
               />
               <FieldError message={errors.store_name} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="currency">Currency</Label>
+              <FieldLabel htmlFor="currency" required>Currency</FieldLabel>
               <Input
                 id="currency"
                 name="currency"
                 defaultValue={String(settings.currency ?? "PKR")}
-                required
                 aria-invalid={!!errors.currency}
               />
               <FieldError message={errors.currency} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="shipping_flat_rate">Shipping Rate (PKR)</Label>
-              <Input
+              <FieldLabel htmlFor="shipping_flat_rate" required>Shipping Rate (PKR)</FieldLabel>
+              <NumericInput
                 id="shipping_flat_rate"
                 name="shipping_flat_rate"
-                type="number"
+                decimal
                 defaultValue={String(settings.shipping_flat_rate ?? 200)}
-                required
                 aria-invalid={!!errors.shipping_flat_rate}
               />
               <FieldError message={errors.shipping_flat_rate} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact_email">Contact Email</Label>
+              <FieldLabel htmlFor="contact_email" required>Contact Email</FieldLabel>
               <Input
                 id="contact_email"
                 name="contact_email"
                 type="email"
                 defaultValue={String(settings.contact_email ?? "")}
-                required
                 aria-invalid={!!errors.contact_email}
               />
               <FieldError message={errors.contact_email} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact_phone">Contact Phone</Label>
+              <FieldLabel htmlFor="contact_phone" required>Contact Phone</FieldLabel>
               <Input
                 id="contact_phone"
                 name="contact_phone"
                 defaultValue={String(settings.contact_phone ?? "")}
-                required
                 aria-invalid={!!errors.contact_phone}
               />
               <FieldError message={errors.contact_phone} />
@@ -119,45 +115,41 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         >
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="bank">Bank</Label>
+              <FieldLabel htmlFor="bank" required>Bank</FieldLabel>
               <Input
                 id="bank"
                 name="bank"
                 defaultValue={bank.bank ?? ""}
-                required
                 aria-invalid={!!errors.bank}
               />
               <FieldError message={errors.bank} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="account_title">Account Title</Label>
+              <FieldLabel htmlFor="account_title" required>Account Title</FieldLabel>
               <Input
                 id="account_title"
                 name="account_title"
                 defaultValue={bank.account_title ?? ""}
-                required
                 aria-invalid={!!errors.account_title}
               />
               <FieldError message={errors.account_title} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="account_number">Account Number</Label>
+              <FieldLabel htmlFor="account_number" required>Account Number</FieldLabel>
               <Input
                 id="account_number"
                 name="account_number"
                 defaultValue={bank.account_number ?? ""}
-                required
                 aria-invalid={!!errors.account_number}
               />
               <FieldError message={errors.account_number} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="iban">IBAN</Label>
+              <FieldLabel htmlFor="iban" required>IBAN</FieldLabel>
               <Input
                 id="iban"
                 name="iban"
                 defaultValue={bank.iban ?? ""}
-                required
                 aria-invalid={!!errors.iban}
               />
               <FieldError message={errors.iban} />
@@ -172,21 +164,19 @@ export function SettingsForm({ settings }: SettingsFormProps) {
           >
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="jazzcash_account_title">Account Title</Label>
+                <FieldLabel htmlFor="jazzcash_account_title" required>Account Title</FieldLabel>
                 <Input
                   id="jazzcash_account_title"
                   name="jazzcash_account_title"
                   defaultValue={jazzcash.account_title ?? ""}
-                  required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jazzcash_account_number">JazzCash Number</Label>
+                <FieldLabel htmlFor="jazzcash_account_number" required>JazzCash Number</FieldLabel>
                 <Input
                   id="jazzcash_account_number"
                   name="jazzcash_account_number"
                   defaultValue={jazzcash.account_number ?? ""}
-                  required
                 />
               </div>
             </div>
@@ -198,21 +188,19 @@ export function SettingsForm({ settings }: SettingsFormProps) {
           >
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="easypaisa_account_title">Account Title</Label>
+                <FieldLabel htmlFor="easypaisa_account_title" required>Account Title</FieldLabel>
                 <Input
                   id="easypaisa_account_title"
                   name="easypaisa_account_title"
                   defaultValue={easypaisa.account_title ?? ""}
-                  required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="easypaisa_account_number">EasyPaisa Number</Label>
+                <FieldLabel htmlFor="easypaisa_account_number" required>EasyPaisa Number</FieldLabel>
                 <Input
                   id="easypaisa_account_number"
                   name="easypaisa_account_number"
                   defaultValue={easypaisa.account_number ?? ""}
-                  required
                 />
               </div>
             </div>
@@ -223,7 +211,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
           <Button
             type="submit"
             disabled={isPending}
-            className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+            variant="kraft"
           >
             {isPending ? "Saving…" : "Save Settings"}
           </Button>

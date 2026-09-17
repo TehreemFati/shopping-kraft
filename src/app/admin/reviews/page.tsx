@@ -1,7 +1,9 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import { getAdminReviews } from "@/lib/actions/reviews";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { firstParam, parsePage, parsePageSize } from "@/lib/admin/list";
 
 export const metadata = { title: "Reviews" };
@@ -29,7 +31,10 @@ export default async function AdminReviewsPage({
 
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold">Reviews</h1>
+      <AdminPageHeader
+        title="Reviews"
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Reviews" }]}
+      />
 
       <AdminFiltersBar
         fields={[
@@ -66,7 +71,7 @@ export default async function AdminReviewsPage({
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">No reviews found.</p>
+        <EmptyState title="No reviews found." />
       ) : (
         <>
           <ReviewsTable reviews={result.data} />

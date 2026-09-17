@@ -18,20 +18,34 @@ export function StoreFormField({
   children,
   className,
   hint,
+  required,
+  error,
 }: {
   label: string;
   htmlFor?: string;
   children: React.ReactNode;
   className?: string;
   hint?: string;
+  required?: boolean;
+  error?: string;
 }) {
   return (
     <div className={cn("space-y-2", className)}>
       <Label htmlFor={htmlFor} className="text-sm font-medium text-kraft-ink/85">
+        {required ? (
+          <span className="mr-1 text-destructive" aria-hidden>
+            *
+          </span>
+        ) : null}
         {label}
       </Label>
       {children}
-      {hint ? (
+      {error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {!error && hint ? (
         <p className="text-xs text-muted-foreground">{hint}</p>
       ) : null}
     </div>

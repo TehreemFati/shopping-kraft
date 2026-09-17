@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import Link from "next/link";
 import { Pencil, Ban, CheckCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -14,36 +13,27 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-  setStaffActive,
-  softDeleteStaff,
-} from "@/lib/actions/staff";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
+import { setStaffActive, softDeleteStaff } from "@/lib/actions/staff";
 import { toast } from "sonner";
 import type { StaffMember } from "@/types/database";
 
 export function StaffTable({ staff }: { staff: StaffMember[] }) {
-  const [isPending, startTransition] = useTransition();
-  const [pendingDelete, setPendingDelete] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [isToggling, startToggle] = useTransition();
+  const { isPending, requestDelete, dialogProps } = useConfirmDelete({
+    onDelete: softDeleteStaff,
+    successMessage: "Staff deleted",
+    title: "Delete staff?",
+    descriptionTemplate:
+      "Soft-delete “{label}”? They will lose admin access.",
+  });
 
   function handleToggle(id: string, currentlyActive: boolean) {
-    startTransition(async () => {
+    startToggle(async () => {
       const result = await setStaffActive(id, !currentlyActive);
       if (result.error) toast.error(result.error);
       else toast.success(currentlyActive ? "Staff disabled" : "Staff enabled");
-    });
-  }
-
-  function confirmDelete() {
-    if (!pendingDelete) return;
-    const { id } = pendingDelete;
-    startTransition(async () => {
-      const result = await softDeleteStaff(id);
-      if ("error" in result) toast.error(String(result.error));
-      else toast.success("Staff deleted");
-      setPendingDelete(null);
     });
   }
 
@@ -75,9 +65,10 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={active ? "default" : "secondary"}>
-                    {active ? "Active" : "Disabled"}
-                  </Badge>
+                  <StatusBadge
+                    active={active}
+                    inactiveLabel="Disabled"
+                  />
                 </TableCell>
                 <TableCell className="space-x-1 text-right">
                   <Button variant="outline" size="sm" asChild>
@@ -89,7 +80,7 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={isPending}
+                    disabled={isToggling || isPending}
                     onClick={() => handleToggle(member.id, active)}
                   >
                     {active ? (
@@ -109,10 +100,7 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
                     size="icon"
                     disabled={isPending}
                     onClick={() =>
-                      setPendingDelete({
-                        id: member.id,
-                        name: member.full_name ?? "staff",
-                      })
+                      requestDelete(member.id, member.full_name ?? "staff")
                     }
                   >
                     <Trash2 className="h-4 w-4" />
@@ -124,21 +112,7 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
         </TableBody>
       </Table>
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Delete staff?"
-        description={
-          pendingDelete
-            ? `Soft-delete “${pendingDelete.name}”? They will lose admin access.`
-            : undefined
-        }
-        confirmLabel="Delete"
-        loading={isPending}
-        onConfirm={confirmDelete}
-      />
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }

@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -22,14 +20,10 @@ import {
   AdminFormSection,
   AdminFormActions,
   FieldError,
+  FieldLabel,
 } from "@/components/admin/AdminFormShell";
+import { useAdminFormSubmit } from "@/hooks/use-admin-form-submit";
 import { createProduct, updateProduct } from "@/lib/actions/products";
-import {
-  flattenFieldErrors,
-  firstFormError,
-  type FormErrors,
-} from "@/lib/utils/form-errors";
-import { toast } from "sonner";
 import type { Category, AdminProduct } from "@/types/database";
 
 interface ProductFormProps {
@@ -45,8 +39,6 @@ function categoryOptionLabel(cat: Category, categories: Category[]) {
 }
 
 export function ProductForm({ categories, product }: ProductFormProps) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [name, setName] = useState(product?.name ?? "");
   const [categoryId, setCategoryId] = useState(product?.category_id ?? "");
   const [price, setPrice] = useState(
@@ -65,7 +57,23 @@ export function ProductForm({ categories, product }: ProductFormProps) {
   const [imageUrls, setImageUrls] = useState<string[]>(
     product?.product_images?.map((i) => i.url) ?? [],
   );
-  const [errors, setErrors] = useState<FormErrors>({});
+
+  const { errors, setErrors, isPending, onSubmit } = useAdminFormSubmit({
+    action: (formData) =>
+      product
+        ? updateProduct(product.id, formData)
+        : createProduct(formData),
+    successMessage: product ? "Product updated" : "Product created",
+    redirectTo: "/admin/products",
+    failureFallback: "Failed to save product",
+    prepareFormData: (formData) => {
+      formData.set("category_id", categoryId);
+      formData.set("price", price);
+      formData.set("sale_price", salePrice);
+      formData.set("stock", stock);
+      imageUrls.forEach((url) => formData.append("image_urls", url));
+    },
+  });
 
   const sortedCategories = useMemo(
     () =>
@@ -87,47 +95,33 @@ export function ProductForm({ categories, product }: ProductFormProps) {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    formData.set("category_id", categoryId);
-    formData.set("price", price);
-    formData.set("sale_price", salePrice);
-    formData.set("stock", stock);
-    imageUrls.forEach((url) => formData.append("image_urls", url));
-
-    startTransition(async () => {
-      const result = product
-        ? await updateProduct(product.id, formData)
-        : await createProduct(formData);
-
-      if (result.error) {
-        const flat = flattenFieldErrors(
-          result.error as Record<string, string[] | undefined>,
-        );
-        if (!categoryId) flat.category_id = flat.category_id ?? "Select a category";
-        setErrors(flat);
-        toast.error(firstFormError(flat) ?? "Failed to save product");
-      } else {
-        setErrors({});
-        toast.success(product ? "Product updated" : "Product created");
-        router.push("/admin/products");
-      }
-    });
+    const next: Record<string, string> = {};
+    if (!name.trim()) next.name = "Name is required";
+    if (!categoryId) next.category_id = "Select a category";
+    if (!price.trim()) next.price = "Price is required";
+    if (Object.keys(next).length) {
+      setErrors(next);
+      return;
+    }
+    onSubmit(e);
   }
 
   return (
     <AdminFormShell>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <AdminFormSection title="Basics" description="Name, URL slug, and category.">
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-12 space-y-2 sm:col-span-6">
-              <Label htmlFor="name">Product Name</Label>
+              <FieldLabel htmlFor="name" required>
+                Product Name
+              </FieldLabel>
               <Input
                 id="name"
                 name="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 aria-invalid={!!errors.name}
-                required
+                aria-required
               />
               <FieldError message={errors.name} />
             </div>
@@ -136,15 +130,15 @@ export function ProductForm({ categories, product }: ProductFormProps) {
                 name="slug"
                 defaultValue={product?.slug}
                 sourceValue={name}
+                required
               />
               <FieldError message={errors.slug} />
             </div>
             <div className="col-span-12 space-y-2 sm:col-span-6">
-              <Label>Category</Label>
+              <FieldLabel required>Category</FieldLabel>
               <Select
                 value={categoryId}
                 onValueChange={(v) => setCategoryId(v ?? "")}
-                required
               >
                 <SelectTrigger
                   className="w-full min-w-0"
@@ -165,7 +159,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               <FieldError message={errors.category_id} />
             </div>
             <div className="col-span-12 space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <FieldLabel htmlFor="description">Description</FieldLabel>
               <Textarea
                 id="description"
                 name="description"
@@ -184,7 +178,9 @@ export function ProductForm({ categories, product }: ProductFormProps) {
         >
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-12 space-y-2 sm:col-span-6">
-              <Label htmlFor="price">Price (PKR)</Label>
+              <FieldLabel htmlFor="price" required>
+                Price (PKR)
+              </FieldLabel>
               <NumericInput
                 id="price"
                 name="price"
@@ -192,13 +188,13 @@ export function ProductForm({ categories, product }: ProductFormProps) {
                 onValueChange={setPrice}
                 decimal
                 aria-invalid={!!errors.price}
-                required
+                aria-required
                 placeholder="0"
               />
               <FieldError message={errors.price} />
             </div>
             <div className="col-span-12 space-y-2 sm:col-span-6">
-              <Label htmlFor="sale_price">Sale Price</Label>
+              <FieldLabel htmlFor="sale_price">Sale Price</FieldLabel>
               <NumericInput
                 id="sale_price"
                 name="sale_price"
@@ -211,7 +207,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               <FieldError message={errors.sale_price} />
             </div>
             <div className="col-span-12 space-y-2 sm:col-span-6">
-              <Label htmlFor="sku">SKU</Label>
+              <FieldLabel htmlFor="sku">SKU</FieldLabel>
               <Input
                 id="sku"
                 name="sku"
@@ -221,7 +217,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               <FieldError message={errors.sku} />
             </div>
             <div className="col-span-12 space-y-2 sm:col-span-6">
-              <Label htmlFor="stock">Stock</Label>
+              <FieldLabel htmlFor="stock">Stock</FieldLabel>
               <NumericInput
                 id="stock"
                 name="stock"
@@ -261,7 +257,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           <Button
             type="submit"
             disabled={isPending}
-            className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+            variant="kraft"
           >
             {isPending ? "Saving…" : "Save Product"}
           </Button>

@@ -1,76 +1,71 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ImageUploader } from "@/components/admin/ImageUploader";
+import { NumericInput } from "@/components/ui/numeric-input";
 import {
   AdminFormShell,
   AdminFormSection,
   AdminFormActions,
   FieldError,
+  FieldLabel,
 } from "@/components/admin/AdminFormShell";
+import { useAdminFormSubmit } from "@/hooks/use-admin-form-submit";
 import { createBanner, updateBanner } from "@/lib/actions/banners";
-import {
-  flattenFieldErrors,
-  firstFormError,
-  type FormErrors,
-} from "@/lib/utils/form-errors";
-import { toast } from "sonner";
 import type { Banner } from "@/types/database";
 
 export function BannerForm({ banner }: { banner?: Banner }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [imageUrl, setImageUrl] = useState(banner?.image_url ?? "");
-  const [errors, setErrors] = useState<FormErrors>({});
   const isEdit = Boolean(banner);
+
+  const { errors, setErrors, isPending, onSubmit } = useAdminFormSubmit({
+    action: (formData) =>
+      isEdit ? updateBanner(banner!.id, formData) : createBanner(formData),
+    successMessage: isEdit ? "Banner updated" : "Banner created",
+    redirectTo: "/admin/banners",
+    failureFallback: "Failed to save banner",
+    prepareFormData: (formData) => {
+      formData.set("image_url", imageUrl);
+    },
+  });
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    formData.set("image_url", imageUrl);
-
-    startTransition(async () => {
-      const result = isEdit
-        ? await updateBanner(banner!.id, formData)
-        : await createBanner(formData);
-      if (result.error) {
-        const flat = flattenFieldErrors(
-          result.error as Record<string, string[] | undefined>,
-        );
-        if (!imageUrl) flat.image_url = flat.image_url ?? "Image is required";
-        setErrors(flat);
-        toast.error(firstFormError(flat) ?? "Failed to save banner");
-      } else {
-        setErrors({});
-        toast.success(isEdit ? "Banner updated" : "Banner created");
-        router.push("/admin/banners");
-      }
-    });
+    const form = e.currentTarget;
+    const title = String(new FormData(form).get("title") ?? "").trim();
+    const next: Record<string, string> = {};
+    if (!title) next.title = "Title is required";
+    if (!imageUrl) next.image_url = "Image is required";
+    if (Object.keys(next).length) {
+      setErrors(next);
+      return;
+    }
+    onSubmit(e);
   }
 
   return (
     <AdminFormShell>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <AdminFormSection title="Copy">
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <FieldLabel htmlFor="title" required>
+                Title
+              </FieldLabel>
               <Input
                 id="title"
                 name="title"
-                required
                 defaultValue={banner?.title}
                 aria-invalid={!!errors.title}
+                aria-required
               />
               <FieldError message={errors.title} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="subtitle">Subtitle</Label>
+              <FieldLabel htmlFor="subtitle">Subtitle</FieldLabel>
               <Input
                 id="subtitle"
                 name="subtitle"
@@ -80,7 +75,7 @@ export function BannerForm({ banner }: { banner?: Banner }) {
               <FieldError message={errors.subtitle} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="link_url">Link URL</Label>
+              <FieldLabel htmlFor="link_url">Link URL</FieldLabel>
               <Input
                 id="link_url"
                 name="link_url"
@@ -90,11 +85,11 @@ export function BannerForm({ banner }: { banner?: Banner }) {
               <FieldError message={errors.link_url} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sort_order">Sort order</Label>
-              <Input
+              <FieldLabel htmlFor="sort_order">Sort order</FieldLabel>
+              <NumericInput
                 id="sort_order"
                 name="sort_order"
-                type="number"
+                decimal={false}
                 defaultValue={banner?.sort_order ?? 0}
                 aria-invalid={!!errors.sort_order}
               />
@@ -105,12 +100,21 @@ export function BannerForm({ banner }: { banner?: Banner }) {
 
         <AdminFormSection
           title="Image"
-          description="Required. Upload or paste a wide hero image."
+          description="Upload or paste a wide hero image."
         >
+          <FieldLabel required>Image</FieldLabel>
           <ImageUploader
             type="category"
             value={imageUrl ? [imageUrl] : []}
-            onChange={(urls) => setImageUrl(urls[0] ?? "")}
+            onChange={(urls) => {
+              setImageUrl(urls[0] ?? "");
+              if (urls[0]) {
+                setErrors((prev) => {
+                  const { image_url: _, ...rest } = prev;
+                  return rest;
+                });
+              }
+            }}
           />
           <FieldError message={errors.image_url} />
         </AdminFormSection>
@@ -122,11 +126,7 @@ export function BannerForm({ banner }: { banner?: Banner }) {
         />
 
         <AdminFormActions>
-          <Button
-            type="submit"
-            disabled={isPending || !imageUrl}
-            className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
-          >
+          <Button type="submit" disabled={isPending} variant="kraft">
             {isPending
               ? "Saving…"
               : isEdit

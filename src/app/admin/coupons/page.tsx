@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getAdminCoupons } from "@/lib/actions/coupons";
 import { CouponsTable } from "@/components/admin/CouponsTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { STATUS_FILTER_FIELD } from "@/lib/admin/status-filter";
 import {
   firstParam,
   parsePage,
@@ -36,12 +39,15 @@ export default async function AdminCouponsPage({
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Coupons</h1>
-        <Button asChild>
-          <Link href="/admin/coupons/new">Add Coupon</Link>
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Coupons"
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Coupons" }]}
+        actions={
+          <Button variant="kraft" asChild>
+            <Link href="/admin/coupons/new">Add Coupon</Link>
+          </Button>
+        }
+      />
 
       <AdminFiltersBar
         fields={[
@@ -51,16 +57,7 @@ export default async function AdminCouponsPage({
             label: "Search",
             placeholder: "Coupon code…",
           },
-          {
-            type: "select",
-            name: "status",
-            label: "Status",
-            options: [
-              { value: "all", label: "All statuses" },
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
-            ],
-          },
+          STATUS_FILTER_FIELD,
           {
             type: "select",
             name: "type",
@@ -75,7 +72,11 @@ export default async function AdminCouponsPage({
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">No coupons found.</p>
+        <EmptyState
+          title="No coupons found."
+          actionLabel="Add Coupon"
+          actionHref="/admin/coupons/new"
+        />
       ) : (
         <>
           <CouponsTable coupons={result.data} />

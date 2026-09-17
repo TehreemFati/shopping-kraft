@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   AdminFormShell,
   AdminFormSection,
   AdminFormActions,
   FieldError,
+  FieldLabel,
 } from "@/components/admin/AdminFormShell";
 import {
   ALL_PERMISSIONS,
@@ -100,16 +102,15 @@ export function StaffForm({ staff }: StaffFormProps) {
 
   return (
     <AdminFormShell>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <AdminFormSection title="Profile">
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Full name</Label>
+              <FieldLabel htmlFor="full_name" required>Full name</FieldLabel>
               <Input
                 id="full_name"
                 name="full_name"
                 defaultValue={staff?.full_name ?? ""}
-                required
                 aria-invalid={!!errors.full_name}
               />
               <FieldError message={errors.full_name} />
@@ -118,11 +119,11 @@ export function StaffForm({ staff }: StaffFormProps) {
             {isEdit ? (
               <>
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <FieldLabel>Email</FieldLabel>
                   <Input value={staff?.email ?? ""} disabled />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <FieldLabel htmlFor="phone">Phone</FieldLabel>
                   <Input
                     id="phone"
                     name="phone"
@@ -135,24 +136,21 @@ export function StaffForm({ staff }: StaffFormProps) {
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <FieldLabel htmlFor="email" required>Email</FieldLabel>
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    required
                     aria-invalid={!!errors.email}
                   />
                   <FieldError message={errors.email} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Temporary password</Label>
-                  <Input
+                  <FieldLabel htmlFor="password" required>Temporary password</FieldLabel>
+                  <PasswordInput
                     id="password"
                     name="password"
-                    type="password"
                     minLength={6}
-                    required
                     aria-invalid={!!errors.password}
                   />
                   <FieldError message={errors.password} />
@@ -215,7 +213,7 @@ export function StaffForm({ staff }: StaffFormProps) {
           <Button
             type="submit"
             disabled={isPending || permissions.length === 0}
-            className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+            variant="kraft"
           >
             {isPending
               ? "Saving…"

@@ -1,6 +1,22 @@
 import { z } from "zod";
 import { ALL_PERMISSIONS } from "@/lib/auth/permissions";
 
+/** Shared password rule used by login, register, staff, and profile. */
+export const passwordField = z
+  .string()
+  .min(6, "Password must be at least 6 characters");
+
+export const passwordChangeSchema = z
+  .object({
+    current_password: z.string().min(1, "Current password is required"),
+    password: passwordField,
+    confirm_password: z.string(),
+  })
+  .refine((data) => data.password === data.confirm_password, {
+    message: "Passwords don't match",
+    path: ["confirm_password"],
+  });
+
 export const categorySchema = z.object({
   name: z.string().min(1, "Name is required"),
   slug: z.string().min(1, "Slug is required"),
@@ -24,25 +40,23 @@ export const productSchema = z.object({
   is_featured: z.boolean().default(false),
 });
 
-export const addressSchema = z.object({
-  label: z.string().optional(),
+const addressCoreSchema = z.object({
   line1: z.string().min(1, "Address is required"),
   line2: z.string().optional(),
   city: z.string().min(1, "City is required"),
   province: z.string().min(1, "Province is required"),
   postal_code: z.string().optional(),
+});
+
+export const addressSchema = addressCoreSchema.extend({
+  label: z.string().optional(),
   country: z.string().default("PK"),
   is_default: z.boolean().default(false),
 });
 
-export const checkoutSchema = z.object({
+export const checkoutSchema = addressCoreSchema.extend({
   full_name: z.string().min(1, "Full name is required"),
   phone: z.string().min(10, "Valid phone number required"),
-  line1: z.string().min(1, "Address is required"),
-  line2: z.string().optional(),
-  city: z.string().min(1, "City is required"),
-  province: z.string().min(1, "Province is required"),
-  postal_code: z.string().optional(),
   payment_method: z.enum(["bank_transfer", "jazzcash", "easypaisa"]),
   coupon_code: z.string().optional(),
   notes: z.string().optional(),
@@ -60,14 +74,14 @@ export const couponSchema = z.object({
 
 export const loginSchema = z.object({
   email: z.string().email("Valid email required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: passwordField,
 });
 
 export const registerSchema = z
   .object({
     full_name: z.string().min(1, "Full name is required"),
     email: z.string().email("Valid email required"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: passwordField,
     confirm_password: z.string(),
   })
   .refine((data) => data.password === data.confirm_password, {
@@ -100,7 +114,7 @@ export const settingsSchema = z.object({
 export const staffCreateSchema = z.object({
   full_name: z.string().min(1, "Full name is required"),
   email: z.string().email("Valid email required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: passwordField,
   permissions: z.array(z.enum(ALL_PERMISSIONS)).min(1, "Select at least one permission"),
 });
 
@@ -142,3 +156,4 @@ export type CategoryInput = z.infer<typeof categorySchema>;
 export type ProductInput = z.infer<typeof productSchema>;
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type CouponInput = z.infer<typeof couponSchema>;
+export type AddressInput = z.infer<typeof addressSchema>;

@@ -42,41 +42,41 @@ export function RegisterForm() {
         Save addresses, track orders, and checkout in a few taps.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <StoreFormField label="Full name" htmlFor="full_name">
+      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-4">
+        <StoreFormField label="Full name" htmlFor="full_name" required>
           <Input
             id="full_name"
             name="full_name"
-            required
+            aria-required
             placeholder="Your full name"
             className={inputClass}
           />
         </StoreFormField>
-        <StoreFormField label="Email" htmlFor="email">
+        <StoreFormField label="Email" htmlFor="email" required>
           <Input
             id="email"
             name="email"
             type="email"
-            required
+            aria-required
             placeholder="you@example.com"
             className={inputClass}
           />
         </StoreFormField>
-        <StoreFormField label="Password" htmlFor="password">
+        <StoreFormField label="Password" htmlFor="password" required>
           <PasswordInput
             id="password"
             name="password"
-            required
+            aria-required
             autoComplete="new-password"
             placeholder="At least 6 characters"
             className={inputClass}
           />
         </StoreFormField>
-        <StoreFormField label="Confirm password" htmlFor="confirm_password">
+        <StoreFormField label="Confirm password" htmlFor="confirm_password" required>
           <PasswordInput
             id="confirm_password"
             name="confirm_password"
-            required
+            aria-required
             autoComplete="new-password"
             placeholder="Repeat your password"
             className={inputClass}
@@ -84,7 +84,9 @@ export function RegisterForm() {
         </StoreFormField>
         <Button
           type="submit"
-          className="mt-1 h-12 w-full rounded-xl bg-kraft-ink text-base font-semibold text-kraft-citrus transition hover:bg-kraft-ink/90 hover:brightness-105"
+          variant="kraft"
+          size="cta"
+          className="mt-1"
           disabled={isPending}
         >
           {isPending ? "Creating account..." : "Create account"}

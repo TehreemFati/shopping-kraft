@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 export function AdminFormShell({
@@ -96,5 +97,26 @@ export function FieldError({ message }: { message?: string }) {
     <p className="text-sm text-destructive" role="alert">
       {message}
     </p>
+  );
+}
+
+export function FieldLabel({
+  children,
+  required,
+  className,
+  ...props
+}: ComponentProps<"label"> & {
+  required?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Label className={cn(className)} {...props}>
+      {required ? (
+        <span className="text-destructive" aria-hidden>
+          *
+        </span>
+      ) : null}
+      {children}
+    </Label>
   );
 }

@@ -44,22 +44,22 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         saved addresses.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <StoreFormField label="Email" htmlFor="email">
+      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-4">
+        <StoreFormField label="Email" htmlFor="email" required>
           <Input
             id="email"
             name="email"
             type="email"
-            required
+            aria-required
             placeholder="you@example.com"
             className={inputClass}
           />
         </StoreFormField>
-        <StoreFormField label="Password" htmlFor="password">
+        <StoreFormField label="Password" htmlFor="password" required>
           <PasswordInput
             id="password"
             name="password"
-            required
+            aria-required
             autoComplete="current-password"
             placeholder="Your password"
             className={inputClass}
@@ -67,7 +67,9 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         </StoreFormField>
         <Button
           type="submit"
-          className="mt-1 h-12 w-full rounded-xl bg-kraft-ink text-base font-semibold text-kraft-citrus transition hover:bg-kraft-ink/90 hover:brightness-105"
+          variant="kraft"
+          size="cta"
+          className="mt-1"
           disabled={isPending}
         >
           {isPending ? "Signing in..." : "Sign In"}

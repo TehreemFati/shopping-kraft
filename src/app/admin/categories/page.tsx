@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   getAdminCategories,
   listAdminCategories,
@@ -5,6 +6,8 @@ import {
 import { CategoriesTable } from "@/components/admin/CategoriesTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { STATUS_FILTER_FIELD } from "@/lib/admin/status-filter";
 import {
   firstParam,
   parsePage,
@@ -37,14 +40,11 @@ export default async function AdminCategoriesPage({
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-display text-2xl tracking-tight text-kraft-ink sm:text-3xl">
-          Categories
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Top-level aisles. Use the shelves icon to manage subcategories.
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Categories"
+        description="Top-level aisles. Use the shelves icon to manage subcategories."
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Categories" }]}
+      />
 
       <AdminFiltersBar
         fields={[
@@ -54,21 +54,12 @@ export default async function AdminCategoriesPage({
             label: "Search",
             placeholder: "Name or slug…",
           },
-          {
-            type: "select",
-            name: "status",
-            label: "Status",
-            options: [
-              { value: "all", label: "All statuses" },
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
-            ],
-          },
+          STATUS_FILTER_FIELD,
         ]}
       />
 
       {result.total === 0 ? (
-        <p className="mb-4 text-muted-foreground">No categories found.</p>
+        <EmptyState title="No categories found." className="mb-4" />
       ) : null}
 
       <CategoriesTable

@@ -3,7 +3,6 @@
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -15,7 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { SlugInput } from "@/components/admin/SlugInput";
 import { ImageUploader } from "@/components/admin/ImageUploader";
-import { FieldError } from "@/components/admin/AdminFormShell";
+import { NumericInput } from "@/components/ui/numeric-input";
+import { FieldError, FieldLabel } from "@/components/admin/AdminFormShell";
 import { createCategory, updateCategory } from "@/lib/actions/categories";
 import {
   flattenFieldErrors,
@@ -63,6 +63,13 @@ export function CategoryDialog({
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const next: FormErrors = {};
+    if (!name.trim()) next.name = "Name is required";
+    if (Object.keys(next).length) {
+      setErrors(next);
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
     if (imageUrl) formData.set("image_url", imageUrl);
     else formData.delete("image_url");
@@ -126,29 +133,37 @@ export function CategoryDialog({
         <form
           key={category?.id ?? `new-${parentId ?? "root"}`}
           onSubmit={handleSubmit}
+          noValidate
           className="space-y-4 px-5 py-5 sm:px-6"
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-1">
-              <Label htmlFor="cat-name">Name</Label>
+              <FieldLabel htmlFor="cat-name" required>
+                Name
+              </FieldLabel>
               <Input
                 id="cat-name"
                 name="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required
                 aria-invalid={!!errors.name}
+                aria-required
               />
               <FieldError message={errors.name} />
             </div>
             <div className="sm:col-span-1">
-              <SlugInput name="slug" sourceValue={name} defaultValue={category?.slug} />
+              <SlugInput
+                name="slug"
+                sourceValue={name}
+                defaultValue={category?.slug}
+                required
+              />
               <FieldError message={errors.slug} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Image</Label>
+            <FieldLabel>Image</FieldLabel>
             <ImageUploader
               type="category"
               value={imageUrl ? [imageUrl] : []}
@@ -171,7 +186,7 @@ export function CategoryDialog({
           {showMore ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="cat-description">Description</Label>
+                <FieldLabel htmlFor="cat-description">Description</FieldLabel>
                 <Textarea
                   id="cat-description"
                   name="description"
@@ -181,16 +196,13 @@ export function CategoryDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cat-sort">Sort order</Label>
-                <Input
+                <FieldLabel htmlFor="cat-sort">Sort order</FieldLabel>
+                <NumericInput
                   id="cat-sort"
                   name="sort_order"
-                  type="text"
-                  inputMode="numeric"
+                  decimal={false}
                   value={sortOrder}
-                  onChange={(e) =>
-                    setSortOrder(e.target.value.replace(/[^0-9]/g, ""))
-                  }
+                  onValueChange={setSortOrder}
                 />
               </div>
             </div>
@@ -215,7 +227,7 @@ export function CategoryDialog({
             <Button
               type="submit"
               disabled={isPending}
-              className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+              variant="kraft"
             >
               {isPending ? "Saving…" : isEdit ? "Save changes" : "Create"}
             </Button>

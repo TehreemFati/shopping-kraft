@@ -2,16 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FieldLabel } from "@/components/admin/AdminFormShell";
 import { slugify } from "@/lib/utils/format";
 
 interface SlugInputProps {
   name: string;
   defaultValue?: string;
   sourceValue?: string;
+  required?: boolean;
 }
 
-export function SlugInput({ name, defaultValue, sourceValue }: SlugInputProps) {
+export function SlugInput({
+  name,
+  defaultValue,
+  sourceValue,
+  required,
+}: SlugInputProps) {
   const [slug, setSlug] = useState(defaultValue ?? "");
   const [manual, setManual] = useState(!!defaultValue);
 
@@ -23,7 +29,9 @@ export function SlugInput({ name, defaultValue, sourceValue }: SlugInputProps) {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={name}>Slug</Label>
+      <FieldLabel htmlFor={name} required={required}>
+        Slug
+      </FieldLabel>
       <Input
         id={name}
         name={name}
@@ -32,7 +40,7 @@ export function SlugInput({ name, defaultValue, sourceValue }: SlugInputProps) {
           setManual(true);
           setSlug(e.target.value);
         }}
-        required
+        aria-required={required}
       />
     </div>
   );

@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FolderTree, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -14,13 +13,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { CategoryDialog } from "@/components/admin/CategoryDialog";
 import { SubcategoriesSheet } from "@/components/admin/SubcategoriesSheet";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import {
   softDeleteCategory,
   type AdminCategoryRow,
 } from "@/lib/actions/categories";
-import { toast } from "sonner";
 import type { Category } from "@/types/database";
 
 export function CategoriesTable({
@@ -34,11 +34,16 @@ export function CategoriesTable({
   initialEditId?: string | null;
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [shelvesParent, setShelvesParent] = useState<Category | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
+  const { isPending, requestDelete, dialogProps } = useConfirmDelete({
+    onDelete: softDeleteCategory,
+    successMessage: "Category deleted",
+    title: "Delete category?",
+    descriptionTemplate:
+      "Delete “{label}”? Subcategories under it should be removed first if the store still references them.",
+  });
 
   useEffect(() => {
     if (!initialEditId) return;
@@ -62,24 +67,10 @@ export function CategoriesTable({
     setDialogOpen(true);
   }
 
-  function confirmDelete() {
-    if (!pendingDelete) return;
-    const id = pendingDelete.id;
-    startTransition(async () => {
-      await softDeleteCategory(id);
-      toast.success("Category deleted");
-      setPendingDelete(null);
-    });
-  }
-
   return (
     <>
       <div className="mb-4 flex justify-end">
-        <Button
-          type="button"
-          onClick={openCreate}
-          className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
-        >
+        <Button type="button" variant="kraft" onClick={openCreate}>
           Add Category
         </Button>
       </div>
@@ -117,9 +108,7 @@ export function CategoriesTable({
               </TableCell>
               <TableCell>{cat.slug}</TableCell>
               <TableCell>
-                <Badge variant={cat.is_active ? "default" : "secondary"}>
-                  {cat.is_active ? "Active" : "Inactive"}
-                </Badge>
+                <StatusBadge active={cat.is_active} />
               </TableCell>
               <TableCell>
                 <span className="text-sm text-muted-foreground">
@@ -154,7 +143,7 @@ export function CategoriesTable({
                   variant="ghost"
                   size="icon"
                   disabled={isPending}
-                  onClick={() => setPendingDelete(cat)}
+                  onClick={() => requestDelete(cat.id, cat.name)}
                   aria-label={`Delete ${cat.name}`}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -180,21 +169,7 @@ export function CategoriesTable({
         allCategories={allCategories}
       />
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(next) => {
-          if (!next) setPendingDelete(null);
-        }}
-        title="Delete category?"
-        description={
-          pendingDelete
-            ? `Delete “${pendingDelete.name}”? Subcategories under it should be removed first if the store still references them.`
-            : undefined
-        }
-        confirmLabel="Delete"
-        loading={isPending}
-        onConfirm={confirmDelete}
-      />
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }

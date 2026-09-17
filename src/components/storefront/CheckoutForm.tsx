@@ -2,12 +2,16 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { AddressFields } from "@/components/storefront/AddressFields";
+import {
+  StoreFormField,
+  StoreSectionCard,
+  storeInputClassName,
+} from "@/components/storefront/store-form";
 import { createOrder } from "@/lib/actions/orders";
 import { formatPrice } from "@/lib/utils/format";
 import { toast } from "sonner";
@@ -55,12 +59,12 @@ export function CheckoutForm({
 
   if (!items.length) {
     return (
-      <div className="py-16 text-center">
-        <p className="mb-4">Your cart is empty.</p>
-        <Button asChild>
-          <Link href="/shop">Shop Now</Link>
-        </Button>
-      </div>
+      <EmptyState
+        title="Your cart is empty."
+        actionLabel="Shop Now"
+        actionHref="/shop"
+        className="py-16"
+      />
     );
   }
 
@@ -97,51 +101,45 @@ export function CheckoutForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-2">
+    <form onSubmit={handleSubmit} noValidate className="grid gap-8 lg:grid-cols-2">
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Shipping Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <StoreSectionCard title="Shipping Details">
+          <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input id="full_name" name="full_name" required />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" name="phone" type="tel" required />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="line1">Address</Label>
-                <Input id="line1" name="line1" required />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="line2">Address Line 2</Label>
-                <Input id="line2" name="line2" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="province">Province</Label>
-                <Input id="province" name="province" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="postal_code">Postal Code</Label>
-                <Input id="postal_code" name="postal_code" />
-              </div>
+              <StoreFormField
+                label="Full Name"
+                htmlFor="full_name"
+                className="sm:col-span-2"
+                required
+              >
+                <Input
+                  id="full_name"
+                  name="full_name"
+                  aria-required
+                  className={storeInputClassName}
+                />
+              </StoreFormField>
+              <StoreFormField
+                label="Phone"
+                htmlFor="phone"
+                className="sm:col-span-2"
+                required
+              >
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  aria-required
+                  className={storeInputClassName}
+                />
+              </StoreFormField>
             </div>
-          </CardContent>
-        </Card>
+            <AddressFields />
+          </div>
+        </StoreSectionCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Method</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <StoreSectionCard title="Payment Method">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Prepaid only — transfer the total, then place your order. We will
               confirm payment on WhatsApp.
@@ -180,7 +178,7 @@ export function CheckoutForm({
             </div>
 
             {paymentMethod === "jazzcash" && jazzcashAccount ? (
-              <div className="rounded-md bg-muted p-4 text-sm">
+              <div className="rounded-md bg-kraft-mist/50 p-4 text-sm">
                 <p className="font-medium">Send JazzCash to:</p>
                 <p>Title: {jazzcashAccount.account_title}</p>
                 <p>Number: {jazzcashAccount.account_number}</p>
@@ -191,7 +189,7 @@ export function CheckoutForm({
             ) : null}
 
             {paymentMethod === "easypaisa" && easypaisaAccount ? (
-              <div className="rounded-md bg-muted p-4 text-sm">
+              <div className="rounded-md bg-kraft-mist/50 p-4 text-sm">
                 <p className="font-medium">Send EasyPaisa to:</p>
                 <p>Title: {easypaisaAccount.account_title}</p>
                 <p>Number: {easypaisaAccount.account_number}</p>
@@ -202,7 +200,7 @@ export function CheckoutForm({
             ) : null}
 
             {paymentMethod === "bank_transfer" && bankAccount ? (
-              <div className="rounded-md bg-muted p-4 text-sm">
+              <div className="rounded-md bg-kraft-mist/50 p-4 text-sm">
                 <p className="font-medium">Transfer to:</p>
                 <p>Bank: {bankAccount.bank}</p>
                 <p>Account: {bankAccount.account_title}</p>
@@ -213,43 +211,43 @@ export function CheckoutForm({
                 </p>
               </div>
             ) : null}
-          </CardContent>
-        </Card>
+          </div>
+        </StoreSectionCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Coupon Code</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2">
-              <Input name="coupon_code" placeholder="Enter coupon code" />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={(e) => {
-                  const input = e.currentTarget
-                    .previousElementSibling as HTMLInputElement;
-                  if (input?.value) applyCoupon(input.value);
-                }}
-              >
-                Apply
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <StoreSectionCard title="Coupon Code">
+          <div className="flex gap-2">
+            <Input
+              name="coupon_code"
+              placeholder="Enter coupon code"
+              className={storeInputClassName}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={(e) => {
+                const input = e.currentTarget
+                  .previousElementSibling as HTMLInputElement;
+                if (input?.value) applyCoupon(input.value);
+              }}
+            >
+              Apply
+            </Button>
+          </div>
+        </StoreSectionCard>
 
-        <div className="space-y-2">
-          <Label htmlFor="notes">Order Notes</Label>
-          <Textarea id="notes" name="notes" placeholder="Optional notes..." />
-        </div>
+        <StoreFormField label="Order Notes" htmlFor="notes">
+          <Textarea
+            id="notes"
+            name="notes"
+            placeholder="Optional notes..."
+            className={storeInputClassName}
+          />
+        </StoreFormField>
       </div>
 
       <div>
-        <Card className="sticky top-24">
-          <CardHeader>
-            <CardTitle>Order Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <StoreSectionCard title="Order Summary" className="sticky top-24">
+          <div className="space-y-3">
             {items.map((item) => (
               <div key={item.id} className="flex justify-between text-sm">
                 <span>
@@ -258,7 +256,7 @@ export function CheckoutForm({
                 <span>{formatPrice(item.unit_price * item.quantity)}</span>
               </div>
             ))}
-            <div className="space-y-2 border-t pt-3">
+            <div className="space-y-2 border-t border-kraft-ink/10 pt-3">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
@@ -278,11 +276,19 @@ export function CheckoutForm({
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isPending}>
-              {isPending ? "Placing Order..." : "Place Order & Notify on WhatsApp"}
+            <Button
+              type="submit"
+              variant="kraft"
+              className="w-full"
+              size="lg"
+              disabled={isPending}
+            >
+              {isPending
+                ? "Placing Order..."
+                : "Place Order & Notify on WhatsApp"}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </StoreSectionCard>
       </div>
     </form>
   );

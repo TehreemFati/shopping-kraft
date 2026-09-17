@@ -6,7 +6,11 @@ import { createClient } from "@/lib/supabase/server";
 import { mergeGuestCart } from "@/lib/actions/cart";
 import { isAdminOrStaff } from "@/lib/auth/roles";
 import { loginSchema, registerSchema } from "@/lib/validators/schemas";
-import { settingsSchema } from "@/lib/validators/schemas";
+import {
+  settingsSchema,
+  addressSchema,
+  passwordChangeSchema,
+} from "@/lib/validators/schemas";
 import type { AdminCustomer } from "@/types/database";
 
 export async function login(formData: FormData) {
@@ -89,16 +93,17 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function updatePassword(formData: FormData) {
-  const current_password = String(formData.get("current_password") ?? "");
-  const password = String(formData.get("password") ?? "");
-  const confirm_password = String(formData.get("confirm_password") ?? "");
-
-  if (password.length < 6) {
-    return { error: "Password must be at least 6 characters" };
+  const parsed = passwordChangeSchema.safeParse({
+    current_password: formData.get("current_password"),
+    password: formData.get("password"),
+    confirm_password: formData.get("confirm_password"),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Invalid password",
+    };
   }
-  if (password !== confirm_password) {
-    return { error: "New passwords do not match" };
-  }
+  const { current_password, password } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -127,15 +132,30 @@ export async function createAddress(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
+  const parsed = addressSchema.safeParse({
+    label: String(formData.get("label") ?? "") || undefined,
+    line1: formData.get("line1"),
+    line2: String(formData.get("line2") ?? "") || undefined,
+    city: formData.get("city"),
+    province: formData.get("province"),
+    postal_code: String(formData.get("postal_code") ?? "") || undefined,
+    is_default: formData.get("is_default") === "on",
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Invalid address",
+    };
+  }
+
   const { error } = await supabase.from("addresses").insert({
     user_id: user.id,
-    label: formData.get("label") as string,
-    line1: formData.get("line1") as string,
-    line2: (formData.get("line2") as string) || null,
-    city: formData.get("city") as string,
-    province: formData.get("province") as string,
-    postal_code: (formData.get("postal_code") as string) || null,
-    is_default: formData.get("is_default") === "on",
+    label: parsed.data.label ?? null,
+    line1: parsed.data.line1,
+    line2: parsed.data.line2 ?? null,
+    city: parsed.data.city,
+    province: parsed.data.province,
+    postal_code: parsed.data.postal_code ?? null,
+    is_default: parsed.data.is_default,
   });
 
   if (error) return { error: error.message };

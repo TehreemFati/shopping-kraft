@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -13,76 +11,73 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NumericInput } from "@/components/ui/numeric-input";
 import {
   AdminFormShell,
   AdminFormSection,
   AdminFormActions,
   FieldError,
+  FieldLabel,
 } from "@/components/admin/AdminFormShell";
+import { useAdminFormSubmit } from "@/hooks/use-admin-form-submit";
 import { createCoupon, updateCoupon } from "@/lib/actions/coupons";
-import {
-  flattenFieldErrors,
-  firstFormError,
-  type FormErrors,
-} from "@/lib/utils/form-errors";
-import { toast } from "sonner";
 import type { Coupon } from "@/types/database";
 
 export function CouponForm({ coupon }: { coupon?: Coupon }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [type, setType] = useState<"percentage" | "fixed">(
     coupon?.type ?? "percentage",
   );
-  const [errors, setErrors] = useState<FormErrors>({});
   const isEdit = Boolean(coupon);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    formData.set("type", type);
-
-    startTransition(async () => {
-      const result = isEdit
-        ? await updateCoupon(coupon!.id, formData)
-        : await createCoupon(formData);
-      if (result.error) {
-        const flat = flattenFieldErrors(
-          result.error as Record<string, string[] | undefined>,
-        );
-        setErrors(flat);
-        toast.error(firstFormError(flat) ?? "Failed to save coupon");
-      } else {
-        setErrors({});
-        toast.success(isEdit ? "Coupon updated" : "Coupon created");
-        router.push("/admin/coupons");
-      }
-    });
-  }
+  const { errors, setErrors, isPending, onSubmit } = useAdminFormSubmit({
+    action: (formData) =>
+      isEdit ? updateCoupon(coupon!.id, formData) : createCoupon(formData),
+    successMessage: isEdit ? "Coupon updated" : "Coupon created",
+    redirectTo: "/admin/coupons",
+    failureFallback: "Failed to save coupon",
+    prepareFormData: (formData) => {
+      formData.set("type", type);
+    },
+  });
 
   const expiresDefault = coupon?.expires_at
     ? coupon.expires_at.slice(0, 16)
     : "";
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const next: Record<string, string> = {};
+    if (!String(fd.get("code") ?? "").trim()) next.code = "Code is required";
+    if (!String(fd.get("value") ?? "").trim()) next.value = "Value is required";
+    if (Object.keys(next).length) {
+      setErrors(next);
+      return;
+    }
+    onSubmit(e);
+  }
+
   return (
     <AdminFormShell>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <AdminFormSection title="Code & discount">
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="code">Code</Label>
+              <FieldLabel htmlFor="code" required>
+                Code
+              </FieldLabel>
               <Input
                 id="code"
                 name="code"
-                required
                 className="uppercase"
                 defaultValue={coupon?.code}
                 aria-invalid={!!errors.code}
+                aria-required
               />
               <FieldError message={errors.code} />
             </div>
             <div className="space-y-2">
-              <Label>Type</Label>
+              <FieldLabel required>Type</FieldLabel>
               <Select
                 value={type}
                 onValueChange={(v) => setType(v as "percentage" | "fixed")}
@@ -98,15 +93,16 @@ export function CouponForm({ coupon }: { coupon?: Coupon }) {
               <FieldError message={errors.type} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="value">Value</Label>
-              <Input
+              <FieldLabel htmlFor="value" required>
+                Value
+              </FieldLabel>
+              <NumericInput
                 id="value"
                 name="value"
-                type="number"
-                step="0.01"
-                required
+                decimal
                 defaultValue={coupon?.value}
                 aria-invalid={!!errors.value}
+                aria-required
               />
               <FieldError message={errors.value} />
             </div>
@@ -116,30 +112,29 @@ export function CouponForm({ coupon }: { coupon?: Coupon }) {
         <AdminFormSection title="Limits">
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="min_order">Minimum Order</Label>
-              <Input
+              <FieldLabel htmlFor="min_order">Minimum Order</FieldLabel>
+              <NumericInput
                 id="min_order"
                 name="min_order"
-                type="number"
-                step="0.01"
+                decimal
                 defaultValue={coupon?.min_order ?? undefined}
                 aria-invalid={!!errors.min_order}
               />
               <FieldError message={errors.min_order} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="max_uses">Max Uses</Label>
-              <Input
+              <FieldLabel htmlFor="max_uses">Max Uses</FieldLabel>
+              <NumericInput
                 id="max_uses"
                 name="max_uses"
-                type="number"
+                decimal={false}
                 defaultValue={coupon?.max_uses ?? undefined}
                 aria-invalid={!!errors.max_uses}
               />
               <FieldError message={errors.max_uses} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="expires_at">Expires At</Label>
+              <FieldLabel htmlFor="expires_at">Expires At</FieldLabel>
               <Input
                 id="expires_at"
                 name="expires_at"
@@ -159,11 +154,7 @@ export function CouponForm({ coupon }: { coupon?: Coupon }) {
         />
 
         <AdminFormActions>
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
-          >
+          <Button type="submit" disabled={isPending} variant="kraft">
             {isPending
               ? "Saving…"
               : isEdit

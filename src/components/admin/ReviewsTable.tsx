@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -12,6 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import {
   setReviewApproved,
   softDeleteReview,
@@ -20,25 +21,20 @@ import {
 import { toast } from "sonner";
 
 export function ReviewsTable({ reviews }: { reviews: AdminReview[] }) {
-  const [isPending, startTransition] = useTransition();
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isModerating, startModerate] = useTransition();
+  const { isPending, requestDelete, dialogProps } = useConfirmDelete({
+    onDelete: softDeleteReview,
+    successMessage: "Review deleted",
+    title: "Delete review?",
+    descriptionTemplate:
+      "Delete review for “{label}”? It will no longer show on the storefront.",
+  });
 
   function moderate(id: string, approved: boolean) {
-    startTransition(async () => {
+    startModerate(async () => {
       const result = await setReviewApproved(id, approved);
       if (result.error) toast.error(result.error);
       else toast.success(approved ? "Review approved" : "Review unapproved");
-    });
-  }
-
-  function confirmDelete() {
-    if (!pendingDeleteId) return;
-    const id = pendingDeleteId;
-    startTransition(async () => {
-      const result = await softDeleteReview(id);
-      if (result.error) toast.error(result.error);
-      else toast.success("Review deleted");
-      setPendingDeleteId(null);
     });
   }
 
@@ -67,16 +63,18 @@ export function ReviewsTable({ reviews }: { reviews: AdminReview[] }) {
                 {review.comment ?? "—"}
               </TableCell>
               <TableCell>
-                <Badge variant={review.is_approved ? "default" : "secondary"}>
-                  {review.is_approved ? "Approved" : "Pending"}
-                </Badge>
+                <StatusBadge
+                  active={review.is_approved}
+                  activeLabel="Approved"
+                  inactiveLabel="Pending"
+                />
               </TableCell>
               <TableCell className="space-x-1 text-right">
                 {!review.is_approved ? (
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={isPending}
+                    disabled={isModerating || isPending}
                     onClick={() => moderate(review.id, true)}
                   >
                     Approve
@@ -85,7 +83,7 @@ export function ReviewsTable({ reviews }: { reviews: AdminReview[] }) {
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={isPending}
+                    disabled={isModerating || isPending}
                     onClick={() => moderate(review.id, false)}
                   >
                     Unapprove
@@ -95,7 +93,9 @@ export function ReviewsTable({ reviews }: { reviews: AdminReview[] }) {
                   size="sm"
                   variant="ghost"
                   disabled={isPending}
-                  onClick={() => setPendingDeleteId(review.id)}
+                  onClick={() =>
+                    requestDelete(review.id, review.products?.name ?? "product")
+                  }
                 >
                   Delete
                 </Button>
@@ -105,17 +105,7 @@ export function ReviewsTable({ reviews }: { reviews: AdminReview[] }) {
         </TableBody>
       </Table>
 
-      <ConfirmDialog
-        open={pendingDeleteId !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDeleteId(null);
-        }}
-        title="Delete review?"
-        description="This review will be removed and can no longer be shown on the storefront."
-        confirmLabel="Delete"
-        loading={isPending}
-        onConfirm={confirmDelete}
-      />
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }

@@ -2,18 +2,27 @@
 
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { AddressFields } from "@/components/storefront/AddressFields";
+import {
+  StoreSectionCard,
+} from "@/components/storefront/store-form";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { createAddress, deleteAddress } from "@/lib/actions/auth";
 import { toast } from "sonner";
 import type { Address } from "@/types/database";
-import {
-  StoreFormField,
-  StoreSectionCard,
-  storeInputClassName,
-} from "@/components/storefront/store-form";
 
 export function AddressesPage({ addresses }: { addresses: Address[] }) {
   const [isPending, startTransition] = useTransition();
+  const { isPending: isDeleting, requestDelete, dialogProps } =
+    useConfirmDelete({
+      onDelete: deleteAddress,
+      successMessage: "Address removed",
+      title: "Remove address?",
+      descriptionTemplate: "Remove “{label}” from your saved addresses?",
+      confirmLabel: "Remove",
+    });
 
   function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,13 +37,6 @@ export function AddressesPage({ addresses }: { addresses: Address[] }) {
     });
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      await deleteAddress(id);
-      toast.success("Address removed");
-    });
-  }
-
   return (
     <div className="space-y-6">
       <StoreSectionCard
@@ -42,7 +44,7 @@ export function AddressesPage({ addresses }: { addresses: Address[] }) {
         description="Addresses you can use quickly at checkout."
       >
         {addresses.length === 0 ? (
-          <p className="text-muted-foreground">No saved addresses yet.</p>
+          <EmptyState title="No saved addresses yet." />
         ) : (
           <div className="space-y-3">
             {addresses.map((addr) => (
@@ -73,8 +75,10 @@ export function AddressesPage({ addresses }: { addresses: Address[] }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  disabled={isPending}
-                  onClick={() => handleDelete(addr.id)}
+                  disabled={isPending || isDeleting}
+                  onClick={() =>
+                    requestDelete(addr.id, addr.label || addr.line1)
+                  }
                   className="shrink-0 text-destructive hover:text-destructive"
                 >
                   Remove
@@ -89,99 +93,15 @@ export function AddressesPage({ addresses }: { addresses: Address[] }) {
         title="Add new address"
         description="Save a home, office, or gift delivery address."
       >
-        <form
-          onSubmit={handleCreate}
-          className="grid max-w-2xl gap-4 sm:grid-cols-2"
-        >
-          <StoreFormField
-            label="Label"
-            htmlFor="label"
-            className="sm:col-span-2"
-          >
-            <Input
-              id="label"
-              name="label"
-              placeholder="Home, Office…"
-              className={storeInputClassName}
-            />
-          </StoreFormField>
-          <StoreFormField
-            label="Address line 1"
-            htmlFor="line1"
-            className="sm:col-span-2"
-          >
-            <Input
-              id="line1"
-              name="line1"
-              required
-              placeholder="Street address"
-              className={storeInputClassName}
-            />
-          </StoreFormField>
-          <StoreFormField
-            label="Address line 2"
-            htmlFor="line2"
-            className="sm:col-span-2"
-            hint="Apartment, suite, landmark — optional"
-          >
-            <Input
-              id="line2"
-              name="line2"
-              placeholder="Apartment, floor, landmark…"
-              className={storeInputClassName}
-            />
-          </StoreFormField>
-          <StoreFormField label="City" htmlFor="city">
-            <Input
-              id="city"
-              name="city"
-              required
-              placeholder="City"
-              className={storeInputClassName}
-            />
-          </StoreFormField>
-          <StoreFormField label="Province" htmlFor="province">
-            <Input
-              id="province"
-              name="province"
-              required
-              placeholder="Province"
-              className={storeInputClassName}
-            />
-          </StoreFormField>
-          <StoreFormField label="Postal code" htmlFor="postal_code">
-            <Input
-              id="postal_code"
-              name="postal_code"
-              placeholder="Optional"
-              className={storeInputClassName}
-            />
-          </StoreFormField>
-          <div className="flex items-center gap-2 sm:col-span-2">
-            <input
-              id="is_default"
-              name="is_default"
-              type="checkbox"
-              className="size-4 rounded border-kraft-ink/25 text-kraft-ink accent-kraft-ink"
-            />
-            <label
-              htmlFor="is_default"
-              className="text-sm text-kraft-ink/85"
-            >
-              Set as default address
-            </label>
-          </div>
-          <div className="sm:col-span-2">
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
-            >
-              {isPending ? "Saving..." : "Save address"}
-            </Button>
-          </div>
+        <form onSubmit={handleCreate} className="max-w-2xl space-y-4">
+          <AddressFields showMeta />
+          <Button type="submit" disabled={isPending} variant="kraft">
+            {isPending ? "Saving..." : "Save address"}
+          </Button>
         </form>
       </StoreSectionCard>
+
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

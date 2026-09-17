@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getStaffMembers } from "@/lib/actions/staff";
 import { StaffTable } from "@/components/admin/StaffTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import {
   firstParam,
   parsePage,
@@ -32,12 +34,15 @@ export default async function AdminStaffPage({
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Staff</h1>
-        <Button asChild>
-          <Link href="/admin/staff/new">Add Staff</Link>
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Staff"
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Staff" }]}
+        actions={
+          <Button variant="kraft" asChild>
+            <Link href="/admin/staff/new">Add Staff</Link>
+          </Button>
+        }
+      />
 
       <AdminFiltersBar
         fields={[
@@ -61,9 +66,12 @@ export default async function AdminStaffPage({
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">
-          No staff found. Add a staff member and assign department permissions.
-        </p>
+        <EmptyState
+          title="No staff found."
+          description="Add a staff member and assign department permissions."
+          actionLabel="Add Staff"
+          actionHref="/admin/staff/new"
+        />
       ) : (
         <>
           <StaffTable staff={result.data} />

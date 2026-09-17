@@ -1,7 +1,9 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import { getAdminInventory } from "@/lib/actions/inventory";
 import { InventoryTable } from "@/components/admin/InventoryTable";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { firstParam, parsePage, parsePageSize } from "@/lib/admin/list";
 
 export const metadata = { title: "Inventory" };
@@ -29,7 +31,10 @@ export default async function AdminInventoryPage({
 
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold">Inventory</h1>
+      <AdminPageHeader
+        title="Inventory"
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Inventory" }]}
+      />
 
       <AdminFiltersBar
         fields={[
@@ -54,7 +59,7 @@ export default async function AdminInventoryPage({
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">No inventory records found.</p>
+        <EmptyState title="No inventory records found." />
       ) : (
         <>
           <InventoryTable items={result.data} />

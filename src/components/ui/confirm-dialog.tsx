@@ -70,10 +70,11 @@ export function ConfirmDialog({
             type="button"
             disabled={loading}
             onClick={onConfirm}
+            variant={variant === "destructive" ? undefined : "kraft"}
             className={
               variant === "destructive"
                 ? "bg-destructive text-white hover:bg-destructive/90"
-                : "bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+                : undefined
             }
           >
             {loading ? "Please wait…" : confirmLabel}

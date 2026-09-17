@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -14,26 +12,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { softDeleteCoupon } from "@/lib/actions/coupons";
-import { toast } from "sonner";
 import type { Coupon } from "@/types/database";
 
 export function CouponsTable({ coupons }: { coupons: Coupon[] }) {
-  const [isPending, startTransition] = useTransition();
-  const [pendingDelete, setPendingDelete] = useState<{
-    id: string;
-    code: string;
-  } | null>(null);
-
-  function confirmDelete() {
-    if (!pendingDelete) return;
-    const { id } = pendingDelete;
-    startTransition(async () => {
-      await softDeleteCoupon(id);
-      toast.success("Coupon deleted");
-      setPendingDelete(null);
-    });
-  }
+  const { isPending, requestDelete, dialogProps } = useConfirmDelete({
+    onDelete: softDeleteCoupon,
+    successMessage: "Coupon deleted",
+    title: "Delete coupon?",
+    descriptionTemplate:
+      "Delete coupon “{label}”? Customers will no longer be able to use it.",
+  });
 
   return (
     <>
@@ -63,9 +54,7 @@ export function CouponsTable({ coupons }: { coupons: Coupon[] }) {
                 {coupon.max_uses ? ` / ${coupon.max_uses}` : ""}
               </TableCell>
               <TableCell>
-                <Badge variant={coupon.is_active ? "default" : "secondary"}>
-                  {coupon.is_active ? "Active" : "Inactive"}
-                </Badge>
+                <StatusBadge active={coupon.is_active} />
               </TableCell>
               <TableCell className="space-x-1 text-right">
                 <Button variant="outline" size="sm" asChild>
@@ -75,9 +64,7 @@ export function CouponsTable({ coupons }: { coupons: Coupon[] }) {
                   variant="ghost"
                   size="icon"
                   disabled={isPending}
-                  onClick={() =>
-                    setPendingDelete({ id: coupon.id, code: coupon.code })
-                  }
+                  onClick={() => requestDelete(coupon.id, coupon.code)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -87,21 +74,7 @@ export function CouponsTable({ coupons }: { coupons: Coupon[] }) {
         </TableBody>
       </Table>
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Delete coupon?"
-        description={
-          pendingDelete
-            ? `Delete coupon “${pendingDelete.code}”? Customers will no longer be able to use it.`
-            : undefined
-        }
-        confirmLabel="Delete"
-        loading={isPending}
-        onConfirm={confirmDelete}
-      />
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }

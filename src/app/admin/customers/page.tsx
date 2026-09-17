@@ -8,9 +8,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getAdminCustomers } from "@/lib/actions/auth";
 import { AdminFiltersBar } from "@/components/admin/AdminFiltersBar";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { firstParam, parsePage, parsePageSize } from "@/lib/admin/list";
 
 export const metadata = { title: "Customers" };
@@ -30,7 +32,10 @@ export default async function AdminCustomersPage({
 
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold">Customers</h1>
+      <AdminPageHeader
+        title="Customers"
+        crumbs={[{ label: "Admin", href: "/admin" }, { label: "Customers" }]}
+      />
 
       <AdminFiltersBar
         fields={[
@@ -44,7 +49,7 @@ export default async function AdminCustomersPage({
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">No customers found.</p>
+        <EmptyState title="No customers found." />
       ) : (
         <>
           <Table>

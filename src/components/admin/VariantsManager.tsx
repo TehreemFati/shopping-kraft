@@ -17,6 +17,9 @@ import {
   softDeleteVariant,
 } from "@/lib/actions/variants";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { NumericInput } from "@/components/ui/numeric-input";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { toast } from "sonner";
 import type { ProductVariant } from "@/types/database";
 import { formatPrice } from "@/lib/utils/format";
@@ -30,10 +33,13 @@ export function VariantsManager({
 }) {
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const { isPending: isDeleting, requestDelete, dialogProps } =
+    useConfirmDelete({
+      onDelete: (id) => softDeleteVariant(id, productId),
+      successMessage: "Variant deleted",
+      title: "Delete variant?",
+      descriptionTemplate: "Delete variant “{label}”?",
+    });
 
   function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,16 +54,6 @@ export function VariantsManager({
         setOpen(false);
         e.currentTarget.reset();
       }
-    });
-  }
-
-  function confirmDelete() {
-    if (!pendingDelete) return;
-    const { id } = pendingDelete;
-    startTransition(async () => {
-      await softDeleteVariant(id, productId);
-      toast.success("Variant deleted");
-      setPendingDelete(null);
     });
   }
 
@@ -82,14 +78,14 @@ export function VariantsManager({
           </div>
           <div className="space-y-2">
             <Label htmlFor="variant_price">Price override</Label>
-            <Input id="variant_price" name="price" type="number" step="0.01" />
+            <NumericInput id="variant_price" name="price" decimal />
           </div>
           <div className="space-y-2">
             <Label htmlFor="variant_stock">Stock</Label>
-            <Input id="variant_stock" name="stock" type="number" defaultValue={0} />
+            <NumericInput id="variant_stock" name="stock" defaultValue={0} />
           </div>
           <div className="sm:col-span-2">
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" variant="kraft" disabled={isPending}>
               {isPending ? "Saving..." : "Create variant"}
             </Button>
           </div>
@@ -97,7 +93,7 @@ export function VariantsManager({
       )}
 
       {variants.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No variants yet.</p>
+        <EmptyState title="No variants yet." />
       ) : (
         <Table>
           <TableHeader>
@@ -122,10 +118,8 @@ export function VariantsManager({
                   <Button
                     variant="ghost"
                     size="sm"
-                    disabled={isPending}
-                    onClick={() =>
-                      setPendingDelete({ id: variant.id, name: variant.name })
-                    }
+                    disabled={isDeleting}
+                    onClick={() => requestDelete(variant.id, variant.name)}
                   >
                     Delete
                   </Button>
@@ -136,21 +130,7 @@ export function VariantsManager({
         </Table>
       )}
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Delete variant?"
-        description={
-          pendingDelete
-            ? `Delete variant “${pendingDelete.name}”?`
-            : undefined
-        }
-        confirmLabel="Delete"
-        loading={isPending}
-        onConfirm={confirmDelete}
-      />
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

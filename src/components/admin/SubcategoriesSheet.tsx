@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/sheet";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CategoryDialog } from "@/components/admin/CategoryDialog";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { softDeleteCategory } from "@/lib/actions/categories";
-import { toast } from "sonner";
 import type { Category } from "@/types/database";
 
 type SubcategoriesSheetProps = {
@@ -30,10 +30,15 @@ export function SubcategoriesSheet({
   parent,
   allCategories,
 }: SubcategoriesSheetProps) {
-  const [isPending, startTransition] = useTransition();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
+  const { isPending, requestDelete, dialogProps } = useConfirmDelete({
+    onDelete: softDeleteCategory,
+    successMessage: "Subcategory deleted",
+    title: "Delete subcategory?",
+    descriptionTemplate:
+      "Delete “{label}”? It will be removed from this aisle.",
+  });
 
   const children = useMemo(() => {
     if (!parent) return [];
@@ -53,16 +58,6 @@ export function SubcategoriesSheet({
   function openEdit(cat: Category) {
     setEditing(cat);
     setFormOpen(true);
-  }
-
-  function confirmDelete() {
-    if (!pendingDelete) return;
-    const id = pendingDelete.id;
-    startTransition(async () => {
-      await softDeleteCategory(id);
-      toast.success("Subcategory deleted");
-      setPendingDelete(null);
-    });
   }
 
   return (
@@ -86,8 +81,9 @@ export function SubcategoriesSheet({
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
             <Button
               type="button"
+              variant="kraft"
+              className="w-full"
               onClick={openCreate}
-              className="w-full bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
               disabled={!parent}
             >
               <Plus className="mr-2 size-4" />
@@ -150,7 +146,7 @@ export function SubcategoriesSheet({
                       variant="ghost"
                       size="icon"
                       disabled={isPending}
-                      onClick={() => setPendingDelete(child)}
+                      onClick={() => requestDelete(child.id, child.name)}
                       aria-label={`Delete ${child.name}`}
                     >
                       <Trash2 className="size-4" />
@@ -171,21 +167,7 @@ export function SubcategoriesSheet({
         parentName={parent?.name}
       />
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(next) => {
-          if (!next) setPendingDelete(null);
-        }}
-        title="Delete subcategory?"
-        description={
-          pendingDelete
-            ? `Delete “${pendingDelete.name}”? It will be removed from this aisle.`
-            : undefined
-        }
-        confirmLabel="Delete"
-        loading={isPending}
-        onConfirm={confirmDelete}
-      />
+      <ConfirmDialog {...dialogProps} />
     </>
   );
 }
