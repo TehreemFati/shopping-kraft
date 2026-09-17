@@ -16,6 +16,7 @@ import {
 import {
   AdminFormShell,
   AdminFormSection,
+  AdminFormActions,
   FieldError,
 } from "@/components/admin/AdminFormShell";
 import { createCoupon, updateCoupon } from "@/lib/actions/coupons";
@@ -64,90 +65,90 @@ export function CouponForm({ coupon }: { coupon?: Coupon }) {
     : "";
 
   return (
-    <AdminFormShell
-      title={isEdit ? "Edit coupon" : "Create coupon"}
-      description="Discount codes for checkout."
-      className="max-w-2xl"
-    >
+    <AdminFormShell>
       <form onSubmit={handleSubmit} className="space-y-6">
         <AdminFormSection title="Code & discount">
-          <div className="space-y-2">
-            <Label htmlFor="code">Code</Label>
-            <Input
-              id="code"
-              name="code"
-              required
-              className="uppercase"
-              defaultValue={coupon?.code}
-              aria-invalid={!!errors.code}
-            />
-            <FieldError message={errors.code} />
-          </div>
-          <div className="space-y-2">
-            <Label>Type</Label>
-            <Select
-              value={type}
-              onValueChange={(v) => setType(v as "percentage" | "fixed")}
-            >
-              <SelectTrigger aria-invalid={!!errors.type}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="percentage">Percentage</SelectItem>
-                <SelectItem value="fixed">Fixed Amount</SelectItem>
-              </SelectContent>
-            </Select>
-            <FieldError message={errors.type} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="value">Value</Label>
-            <Input
-              id="value"
-              name="value"
-              type="number"
-              step="0.01"
-              required
-              defaultValue={coupon?.value}
-              aria-invalid={!!errors.value}
-            />
-            <FieldError message={errors.value} />
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="code">Code</Label>
+              <Input
+                id="code"
+                name="code"
+                required
+                className="uppercase"
+                defaultValue={coupon?.code}
+                aria-invalid={!!errors.code}
+              />
+              <FieldError message={errors.code} />
+            </div>
+            <div className="space-y-2">
+              <Label>Type</Label>
+              <Select
+                value={type}
+                onValueChange={(v) => setType(v as "percentage" | "fixed")}
+              >
+                <SelectTrigger aria-invalid={!!errors.type}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percentage">Percentage</SelectItem>
+                  <SelectItem value="fixed">Fixed Amount</SelectItem>
+                </SelectContent>
+              </Select>
+              <FieldError message={errors.type} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="value">Value</Label>
+              <Input
+                id="value"
+                name="value"
+                type="number"
+                step="0.01"
+                required
+                defaultValue={coupon?.value}
+                aria-invalid={!!errors.value}
+              />
+              <FieldError message={errors.value} />
+            </div>
           </div>
         </AdminFormSection>
 
         <AdminFormSection title="Limits">
-          <div className="space-y-2">
-            <Label htmlFor="min_order">Minimum Order</Label>
-            <Input
-              id="min_order"
-              name="min_order"
-              type="number"
-              step="0.01"
-              defaultValue={coupon?.min_order ?? undefined}
-              aria-invalid={!!errors.min_order}
-            />
-            <FieldError message={errors.min_order} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="max_uses">Max Uses</Label>
-            <Input
-              id="max_uses"
-              name="max_uses"
-              type="number"
-              defaultValue={coupon?.max_uses ?? undefined}
-              aria-invalid={!!errors.max_uses}
-            />
-            <FieldError message={errors.max_uses} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="expires_at">Expires At</Label>
-            <Input
-              id="expires_at"
-              name="expires_at"
-              type="datetime-local"
-              defaultValue={expiresDefault}
-              aria-invalid={!!errors.expires_at}
-            />
-            <FieldError message={errors.expires_at} />
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="min_order">Minimum Order</Label>
+              <Input
+                id="min_order"
+                name="min_order"
+                type="number"
+                step="0.01"
+                defaultValue={coupon?.min_order ?? undefined}
+                aria-invalid={!!errors.min_order}
+              />
+              <FieldError message={errors.min_order} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="max_uses">Max Uses</Label>
+              <Input
+                id="max_uses"
+                name="max_uses"
+                type="number"
+                defaultValue={coupon?.max_uses ?? undefined}
+                aria-invalid={!!errors.max_uses}
+              />
+              <FieldError message={errors.max_uses} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expires_at">Expires At</Label>
+              <Input
+                id="expires_at"
+                name="expires_at"
+                type="datetime-local"
+                defaultValue={expiresDefault}
+                aria-invalid={!!errors.expires_at}
+              />
+              <FieldError message={errors.expires_at} />
+            </div>
           </div>
         </AdminFormSection>
 
@@ -157,7 +158,7 @@ export function CouponForm({ coupon }: { coupon?: Coupon }) {
           value={coupon?.is_active === false ? "false" : "true"}
         />
 
-        <div className="flex flex-wrap gap-2 border-t border-border/60 pt-4">
+        <AdminFormActions>
           <Button
             type="submit"
             disabled={isPending}
@@ -172,7 +173,7 @@ export function CouponForm({ coupon }: { coupon?: Coupon }) {
           <Button variant="outline" asChild>
             <Link href="/admin/coupons">Cancel</Link>
           </Button>
-        </div>
+        </AdminFormActions>
       </form>
     </AdminFormShell>
   );

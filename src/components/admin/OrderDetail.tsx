@@ -23,6 +23,7 @@ import {
   ORDER_STATUS_LABELS,
   PAYMENT_METHOD_LABELS,
 } from "@/lib/utils/format";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import type { OrderStatus, AdminOrder } from "@/types/database";
 
@@ -42,6 +43,7 @@ const STATUS_OPTIONS: OrderStatus[] = [
 export function OrderDetail({ order }: OrderDetailProps) {
   const [isPending, startTransition] = useTransition();
   const [tracking, setTracking] = useState(order.tracking_number ?? "");
+  const [refundOpen, setRefundOpen] = useState(false);
   const address = order.shipping_address as Record<string, string>;
 
   function handleStatusChange(status: OrderStatus) {
@@ -60,14 +62,12 @@ export function OrderDetail({ order }: OrderDetailProps) {
     });
   }
 
-  function handleRefund() {
-    if (!confirm("Refund this order? Stock will be restored and order cancelled.")) {
-      return;
-    }
+  function confirmRefund() {
     startTransition(async () => {
       const result = await refundOrder(order.id);
       if (result.error) toast.error(result.error);
       else toast.success("Order refunded");
+      setRefundOpen(false);
     });
   }
 
@@ -133,7 +133,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 variant="destructive"
                 size="sm"
                 disabled={isPending}
-                onClick={handleRefund}
+                onClick={() => setRefundOpen(true)}
               >
                 Refund order
               </Button>
@@ -240,6 +240,16 @@ export function OrderDetail({ order }: OrderDetailProps) {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={refundOpen}
+        onOpenChange={setRefundOpen}
+        title="Refund this order?"
+        description="Stock will be restored and the order will be cancelled. This cannot be undone from here."
+        confirmLabel="Refund order"
+        loading={isPending}
+        onConfirm={confirmRefund}
+      />
     </div>
   );
 }

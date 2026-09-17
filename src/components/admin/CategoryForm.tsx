@@ -12,6 +12,7 @@ import { ImageUploader } from "@/components/admin/ImageUploader";
 import {
   AdminFormShell,
   AdminFormSection,
+  AdminFormActions,
   FieldError,
 } from "@/components/admin/AdminFormShell";
 import { createCategory, updateCategory } from "@/lib/actions/categories";
@@ -68,73 +69,74 @@ export function CategoryForm({
   }
 
   return (
-    <AdminFormShell
-      title={isEdit ? "Edit category" : "Add category"}
-      description="Organize the gift catalog into browsable aisles."
-      className="max-w-2xl"
-    >
+    <AdminFormShell>
       <form onSubmit={handleSubmit} className="space-y-6">
         <AdminFormSection title="Basics">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              aria-invalid={!!errors.name}
-              required
-            />
-            <FieldError message={errors.name} />
-          </div>
-          <SlugInput
-            name="slug"
-            sourceValue={name}
-            defaultValue={category?.slug}
-          />
-          <FieldError message={errors.slug} />
-          <div className="space-y-2">
-            <Label htmlFor="parent_id">Parent category</Label>
-            <select
-              id="parent_id"
-              name="parent_id"
-              value={parentId}
-              onChange={(e) => setParentId(e.target.value)}
-              aria-invalid={!!errors.parent_id}
-              className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <option value="">None (top-level)</option>
-              {selectableParents.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-muted-foreground">
-              Optional. Only one level of nesting is supported.
-            </p>
-            <FieldError message={errors.parent_id} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              defaultValue={category?.description ?? ""}
-              aria-invalid={!!errors.description}
-            />
-            <FieldError message={errors.description} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="sort_order">Sort Order</Label>
-            <Input
-              id="sort_order"
-              name="sort_order"
-              type="number"
-              defaultValue={category?.sort_order ?? 0}
-              aria-invalid={!!errors.sort_order}
-            />
-            <FieldError message={errors.sort_order} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                aria-invalid={!!errors.name}
+                required
+              />
+              <FieldError message={errors.name} />
+            </div>
+            <div className="space-y-2">
+              <SlugInput
+                name="slug"
+                sourceValue={name}
+                defaultValue={category?.slug}
+              />
+              <FieldError message={errors.slug} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="parent_id">Parent category</Label>
+              <select
+                id="parent_id"
+                name="parent_id"
+                value={parentId}
+                onChange={(e) => setParentId(e.target.value)}
+                aria-invalid={!!errors.parent_id}
+                className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <option value="">None (top-level)</option>
+                {selectableParents.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Optional. Only one level of nesting is supported.
+              </p>
+              <FieldError message={errors.parent_id} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sort_order">Sort Order</Label>
+              <Input
+                id="sort_order"
+                name="sort_order"
+                type="number"
+                defaultValue={category?.sort_order ?? 0}
+                aria-invalid={!!errors.sort_order}
+              />
+              <FieldError message={errors.sort_order} />
+            </div>
+            <div className="space-y-2 lg:col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                defaultValue={category?.description ?? ""}
+                aria-invalid={!!errors.description}
+                rows={4}
+              />
+              <FieldError message={errors.description} />
+            </div>
           </div>
         </AdminFormSection>
 
@@ -158,7 +160,7 @@ export function CategoryForm({
           value={category?.is_active === false ? "false" : "true"}
         />
 
-        <div className="flex flex-wrap gap-2 border-t border-border/60 pt-4">
+        <AdminFormActions>
           <Button
             type="submit"
             disabled={isPending}
@@ -173,7 +175,7 @@ export function CategoryForm({
           <Button variant="outline" asChild>
             <Link href="/admin/categories">Cancel</Link>
           </Button>
-        </div>
+        </AdminFormActions>
       </form>
     </AdminFormShell>
   );

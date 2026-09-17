@@ -26,7 +26,7 @@ export default async function EditProductPage({
     <div>
       <AdminPageHeader
         title="Edit Product"
-        description={product.name}
+        description={`${product.name} — gift details, pricing, stock, and gallery.`}
         crumbs={[
           { label: "Admin", href: "/admin" },
           { label: "Products", href: "/admin/products" },

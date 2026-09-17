@@ -11,7 +11,7 @@ export default async function AdminSettingsPage() {
     <div>
       <AdminPageHeader
         title="Settings"
-        description="Store contact, shipping, and bank details."
+        description="Contact details, shipping, bank, JazzCash, and EasyPaisa."
         crumbs={[
           { label: "Admin", href: "/admin" },
           { label: "Settings" },

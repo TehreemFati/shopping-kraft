@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   AdminFormShell,
   AdminFormSection,
+  AdminFormActions,
   FieldError,
 } from "@/components/admin/AdminFormShell";
 import {
@@ -98,67 +99,67 @@ export function StaffForm({ staff }: StaffFormProps) {
   }
 
   return (
-    <AdminFormShell
-      title={isEdit ? "Edit staff" : "Add staff"}
-      description="Invite teammates and assign module permissions."
-      className="max-w-3xl"
-    >
+    <AdminFormShell>
       <form onSubmit={handleSubmit} className="space-y-6">
         <AdminFormSection title="Profile">
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Full name</Label>
-            <Input
-              id="full_name"
-              name="full_name"
-              defaultValue={staff?.full_name ?? ""}
-              required
-              aria-invalid={!!errors.full_name}
-            />
-            <FieldError message={errors.full_name} />
-          </div>
-
-          {isEdit ? (
+          <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={staff?.email ?? ""} disabled />
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  defaultValue={staff?.phone ?? ""}
-                  aria-invalid={!!errors.phone}
-                />
-                <FieldError message={errors.phone} />
-              </div>
+              <Label htmlFor="full_name">Full name</Label>
+              <Input
+                id="full_name"
+                name="full_name"
+                defaultValue={staff?.full_name ?? ""}
+                required
+                aria-invalid={!!errors.full_name}
+              />
+              <FieldError message={errors.full_name} />
             </div>
-          ) : (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  aria-invalid={!!errors.email}
-                />
-                <FieldError message={errors.email} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Temporary password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  minLength={6}
-                  required
-                  aria-invalid={!!errors.password}
-                />
-                <FieldError message={errors.password} />
-              </div>
-            </>
-          )}
+
+            {isEdit ? (
+              <>
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input value={staff?.email ?? ""} disabled />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    defaultValue={staff?.phone ?? ""}
+                    aria-invalid={!!errors.phone}
+                  />
+                  <FieldError message={errors.phone} />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    aria-invalid={!!errors.email}
+                  />
+                  <FieldError message={errors.email} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Temporary password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    minLength={6}
+                    required
+                    aria-invalid={!!errors.password}
+                  />
+                  <FieldError message={errors.password} />
+                </div>
+              </>
+            )}
+          </div>
         </AdminFormSection>
 
         <AdminFormSection title="Permissions">
@@ -179,13 +180,15 @@ export function StaffForm({ staff }: StaffFormProps) {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-2">
             {Object.entries(grouped).map(([group, perms]) => (
               <div
                 key={group}
-                className="rounded-lg border border-border/70 bg-muted/20 p-3"
+                className="rounded-lg border border-kraft-ink/10 bg-background/60 p-3"
               >
-                <p className="mb-2 text-sm font-medium capitalize">{group}</p>
+                <p className="mb-2 text-sm font-medium capitalize text-kraft-ink">
+                  {group}
+                </p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {perms.map((permission) => (
                     <label
@@ -208,7 +211,7 @@ export function StaffForm({ staff }: StaffFormProps) {
           <FieldError message={errors.permissions} />
         </AdminFormSection>
 
-        <div className="flex flex-wrap gap-2 border-t border-border/60 pt-4">
+        <AdminFormActions>
           <Button
             type="submit"
             disabled={isPending || permissions.length === 0}
@@ -223,7 +226,7 @@ export function StaffForm({ staff }: StaffFormProps) {
           <Button variant="outline" asChild>
             <Link href="/admin/staff">Cancel</Link>
           </Button>
-        </div>
+        </AdminFormActions>
       </form>
     </AdminFormShell>
   );

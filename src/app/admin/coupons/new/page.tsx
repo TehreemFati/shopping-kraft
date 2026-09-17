@@ -8,6 +8,7 @@ export default function NewCouponPage() {
     <div>
       <AdminPageHeader
         title="Add Coupon"
+        description="Discount codes for checkout."
         crumbs={[
           { label: "Admin", href: "/admin" },
           { label: "Coupons", href: "/admin/coupons" },

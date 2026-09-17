@@ -18,6 +18,7 @@ export default async function NewSalePage() {
     <div>
       <AdminPageHeader
         title="Create Sale"
+        description="Timed campaigns with optional campaign prices."
         crumbs={[
           { label: "Admin", href: "/admin" },
           { label: "Sales", href: "/admin/sales" },

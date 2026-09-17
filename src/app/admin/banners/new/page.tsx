@@ -8,6 +8,7 @@ export default function NewBannerPage() {
     <div>
       <AdminPageHeader
         title="Add Banner"
+        description="Hero slides for the storefront homepage."
         crumbs={[
           { label: "Admin", href: "/admin" },
           { label: "Banners", href: "/admin/banners" },

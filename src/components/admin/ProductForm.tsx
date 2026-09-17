@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/select";
 import { SlugInput } from "@/components/admin/SlugInput";
 import { ImageUploader } from "@/components/admin/ImageUploader";
+import { NumericInput } from "@/components/ui/numeric-input";
 import {
   AdminFormShell,
   AdminFormSection,
+  AdminFormActions,
   FieldError,
 } from "@/components/admin/AdminFormShell";
 import { createProduct, updateProduct } from "@/lib/actions/products";
@@ -35,20 +37,61 @@ interface ProductFormProps {
   product?: AdminProduct;
 }
 
+function categoryOptionLabel(cat: Category, categories: Category[]) {
+  const parent = cat.parent_id
+    ? categories.find((c) => c.id === cat.parent_id)
+    : null;
+  return parent ? `${parent.name} › ${cat.name}` : cat.name;
+}
+
 export function ProductForm({ categories, product }: ProductFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState(product?.name ?? "");
   const [categoryId, setCategoryId] = useState(product?.category_id ?? "");
+  const [price, setPrice] = useState(
+    product?.price !== undefined && product?.price !== null
+      ? String(product.price)
+      : "",
+  );
+  const [salePrice, setSalePrice] = useState(
+    product?.sale_price !== undefined && product?.sale_price !== null
+      ? String(product.sale_price)
+      : "",
+  );
+  const [stock, setStock] = useState(
+    String(product?.inventory?.[0]?.quantity ?? 0),
+  );
   const [imageUrls, setImageUrls] = useState<string[]>(
     product?.product_images?.map((i) => i.url) ?? [],
   );
   const [errors, setErrors] = useState<FormErrors>({});
 
+  const sortedCategories = useMemo(
+    () =>
+      [...categories].sort((a, b) => {
+        const aParent = a.parent_id ?? "";
+        const bParent = b.parent_id ?? "";
+        if (!a.parent_id && b.parent_id) return -1;
+        if (a.parent_id && !b.parent_id) return 1;
+        if (aParent !== bParent) return aParent.localeCompare(bParent);
+        return a.sort_order - b.sort_order || a.name.localeCompare(b.name);
+      }),
+    [categories],
+  );
+
+  const selectedCategoryLabel = useMemo(() => {
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat ? categoryOptionLabel(cat, categories) : null;
+  }, [categories, categoryId]);
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     formData.set("category_id", categoryId);
+    formData.set("price", price);
+    formData.set("sale_price", salePrice);
+    formData.set("stock", stock);
     imageUrls.forEach((url) => formData.append("image_urls", url));
 
     startTransition(async () => {
@@ -72,81 +115,66 @@ export function ProductForm({ categories, product }: ProductFormProps) {
   }
 
   return (
-    <AdminFormShell
-      title={product ? "Edit product" : "Add product"}
-      description="Gift details, pricing, stock, and gallery images."
-      className="max-w-3xl"
-    >
+    <AdminFormShell>
       <form onSubmit={handleSubmit} className="space-y-6">
         <AdminFormSection title="Basics" description="Name, URL slug, and category.">
-          <div className="space-y-2">
-            <Label htmlFor="name">Product Name</Label>
-            <Input
-              id="name"
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              aria-invalid={!!errors.name}
-              required
-            />
-            <FieldError message={errors.name} />
-          </div>
-          <SlugInput
-            name="slug"
-            defaultValue={product?.slug}
-            sourceValue={name}
-          />
-          <FieldError message={errors.slug} />
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select
-              value={categoryId}
-              onValueChange={(v) => setCategoryId(v ?? "")}
-              required
-            >
-              <SelectTrigger aria-invalid={!!errors.category_id}>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {[...categories]
-                  .sort((a, b) => {
-                    const aParent = a.parent_id ?? "";
-                    const bParent = b.parent_id ?? "";
-                    if (!a.parent_id && b.parent_id) return -1;
-                    if (a.parent_id && !b.parent_id) return 1;
-                    if (aParent !== bParent) return aParent.localeCompare(bParent);
-                    return (
-                      a.sort_order - b.sort_order ||
-                      a.name.localeCompare(b.name)
-                    );
-                  })
-                  .map((cat) => {
-                  const parent = cat.parent_id
-                    ? categories.find((c) => c.id === cat.parent_id)
-                    : null;
-                  const label = parent
-                    ? `${parent.name} › ${cat.name}`
-                    : cat.name;
-                  return (
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 space-y-2 sm:col-span-6">
+              <Label htmlFor="name">Product Name</Label>
+              <Input
+                id="name"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                aria-invalid={!!errors.name}
+                required
+              />
+              <FieldError message={errors.name} />
+            </div>
+            <div className="col-span-12 space-y-2 sm:col-span-6">
+              <SlugInput
+                name="slug"
+                defaultValue={product?.slug}
+                sourceValue={name}
+              />
+              <FieldError message={errors.slug} />
+            </div>
+            <div className="col-span-12 space-y-2 sm:col-span-6">
+              <Label>Category</Label>
+              <Select
+                value={categoryId}
+                onValueChange={(v) => setCategoryId(v ?? "")}
+                required
+              >
+                <SelectTrigger
+                  className="w-full min-w-0"
+                  aria-invalid={!!errors.category_id}
+                >
+                  <SelectValue placeholder="Select category">
+                    {selectedCategoryLabel}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {sortedCategories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
-                      {label}
+                      {categoryOptionLabel(cat, categories)}
                     </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-            <FieldError message={errors.category_id} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              defaultValue={product?.description ?? ""}
-              rows={5}
-              aria-invalid={!!errors.description}
-            />
-            <FieldError message={errors.description} />
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError message={errors.category_id} />
+            </div>
+            <div className="col-span-12 space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                defaultValue={product?.description ?? ""}
+                rows={5}
+                aria-invalid={!!errors.description}
+              />
+              <FieldError message={errors.description} />
+            </div>
           </div>
         </AdminFormSection>
 
@@ -154,35 +182,35 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           title="Pricing & stock"
           description="PKR prices and available quantity."
         >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 space-y-2 sm:col-span-6">
               <Label htmlFor="price">Price (PKR)</Label>
-              <Input
+              <NumericInput
                 id="price"
                 name="price"
-                type="number"
-                step="0.01"
-                defaultValue={product?.price}
+                value={price}
+                onValueChange={setPrice}
+                decimal
                 aria-invalid={!!errors.price}
                 required
+                placeholder="0"
               />
               <FieldError message={errors.price} />
             </div>
-            <div className="space-y-2">
+            <div className="col-span-12 space-y-2 sm:col-span-6">
               <Label htmlFor="sale_price">Sale Price</Label>
-              <Input
+              <NumericInput
                 id="sale_price"
                 name="sale_price"
-                type="number"
-                step="0.01"
-                defaultValue={product?.sale_price ?? ""}
+                value={salePrice}
+                onValueChange={setSalePrice}
+                decimal
                 aria-invalid={!!errors.sale_price}
+                placeholder="Optional"
               />
               <FieldError message={errors.sale_price} />
             </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+            <div className="col-span-12 space-y-2 sm:col-span-6">
               <Label htmlFor="sku">SKU</Label>
               <Input
                 id="sku"
@@ -192,14 +220,16 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               />
               <FieldError message={errors.sku} />
             </div>
-            <div className="space-y-2">
+            <div className="col-span-12 space-y-2 sm:col-span-6">
               <Label htmlFor="stock">Stock</Label>
-              <Input
+              <NumericInput
                 id="stock"
                 name="stock"
-                type="number"
-                defaultValue={product?.inventory?.[0]?.quantity ?? 0}
+                value={stock}
+                onValueChange={setStock}
+                decimal={false}
                 aria-invalid={!!errors.stock}
+                placeholder="0"
               />
               <FieldError message={errors.stock} />
             </div>
@@ -210,12 +240,14 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           title="Images"
           description="Upload photos or paste image URLs. First image is primary."
         >
-          <ImageUploader
-            type="product"
-            productId={product?.id}
-            value={imageUrls}
-            onChange={setImageUrls}
-          />
+          <div className="col-span-12">
+            <ImageUploader
+              type="product"
+              productId={product?.id}
+              value={imageUrls}
+              onChange={setImageUrls}
+            />
+          </div>
         </AdminFormSection>
 
         <input type="hidden" name="is_active" value="true" />
@@ -225,7 +257,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           value={product?.is_featured ? "true" : "false"}
         />
 
-        <div className="flex flex-wrap gap-2 border-t border-border/60 pt-4">
+        <AdminFormActions>
           <Button
             type="submit"
             disabled={isPending}
@@ -236,7 +268,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           <Button variant="outline" asChild>
             <Link href="/admin/products">Cancel</Link>
           </Button>
-        </div>
+        </AdminFormActions>
       </form>
     </AdminFormShell>
   );

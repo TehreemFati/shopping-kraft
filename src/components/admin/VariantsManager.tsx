@@ -16,6 +16,7 @@ import {
   createVariant,
   softDeleteVariant,
 } from "@/lib/actions/variants";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import type { ProductVariant } from "@/types/database";
 import { formatPrice } from "@/lib/utils/format";
@@ -29,6 +30,10 @@ export function VariantsManager({
 }) {
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -46,11 +51,13 @@ export function VariantsManager({
     });
   }
 
-  function handleDelete(id: string, name: string) {
-    if (!confirm(`Delete variant "${name}"?`)) return;
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    const { id } = pendingDelete;
     startTransition(async () => {
       await softDeleteVariant(id, productId);
       toast.success("Variant deleted");
+      setPendingDelete(null);
     });
   }
 
@@ -116,7 +123,9 @@ export function VariantsManager({
                     variant="ghost"
                     size="sm"
                     disabled={isPending}
-                    onClick={() => handleDelete(variant.id, variant.name)}
+                    onClick={() =>
+                      setPendingDelete({ id: variant.id, name: variant.name })
+                    }
                   >
                     Delete
                   </Button>
@@ -126,6 +135,22 @@ export function VariantsManager({
           </TableBody>
         </Table>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+        title="Delete variant?"
+        description={
+          pendingDelete
+            ? `Delete variant “${pendingDelete.name}”?`
+            : undefined
+        }
+        confirmLabel="Delete"
+        loading={isPending}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

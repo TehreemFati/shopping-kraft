@@ -187,6 +187,8 @@ export type CategoryListFilters = {
   pageSize?: number;
 };
 
+export type AdminCategoryRow = Category & { child_count: number };
+
 export async function listAdminCategories(filters: CategoryListFilters = {}) {
   await requirePermission("categories.view");
   const supabase = await createServiceClient();
@@ -199,6 +201,7 @@ export async function listAdminCategories(filters: CategoryListFilters = {}) {
     .from("categories")
     .select("*", { count: "exact" })
     .is("deleted_at", null)
+    .is("parent_id", null)
     .order("sort_order")
     .order("name");
 
@@ -209,9 +212,33 @@ export async function listAdminCategories(filters: CategoryListFilters = {}) {
   if (filters.status === "inactive") query = query.eq("is_active", false);
 
   const { data, count } = await query.range(from, to);
+  const roots = (data ?? []) as Category[];
   const total = count ?? 0;
+
+  const childCountByParent = new Map<string, number>();
+  if (roots.length > 0) {
+    const { data: children } = await supabase
+      .from("categories")
+      .select("parent_id")
+      .is("deleted_at", null)
+      .in(
+        "parent_id",
+        roots.map((r) => r.id),
+      );
+    for (const row of children ?? []) {
+      if (!row.parent_id) continue;
+      childCountByParent.set(
+        row.parent_id,
+        (childCountByParent.get(row.parent_id) ?? 0) + 1,
+      );
+    }
+  }
+
   return {
-    data: (data ?? []) as Category[],
+    data: roots.map((r) => ({
+      ...r,
+      child_count: childCountByParent.get(r.id) ?? 0,
+    })) as AdminCategoryRow[],
     total,
     page,
     pageSize,

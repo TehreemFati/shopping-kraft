@@ -8,6 +8,7 @@ export default function NewStaffPage() {
     <div>
       <AdminPageHeader
         title="Add Staff"
+        description="Invite teammates and assign module permissions."
         crumbs={[
           { label: "Admin", href: "/admin" },
           { label: "Staff", href: "/admin/staff" },

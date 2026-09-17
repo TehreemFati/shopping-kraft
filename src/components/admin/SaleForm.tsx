@@ -12,6 +12,7 @@ import { SlugInput } from "@/components/admin/SlugInput";
 import {
   AdminFormShell,
   AdminFormSection,
+  AdminFormActions,
   FieldError,
 } from "@/components/admin/AdminFormShell";
 import {
@@ -102,11 +103,7 @@ export function SaleForm({
   }
 
   return (
-    <AdminFormShell
-      title={isEdit ? "Edit sale" : "Create sale"}
-      description="Timed campaigns with optional campaign prices."
-      className="max-w-3xl"
-    >
+    <AdminFormShell>
       <form onSubmit={handleSubmit} className="space-y-6">
         <AdminFormSection title="Campaign">
           <div className="grid gap-4 md:grid-cols-2">
@@ -247,7 +244,7 @@ export function SaleForm({
           <FieldError message={errors.product_ids} />
         </AdminFormSection>
 
-        <div className="flex flex-wrap gap-2 border-t border-border/60 pt-4">
+        <AdminFormActions>
           <Button
             type="submit"
             disabled={isPending}
@@ -262,7 +259,7 @@ export function SaleForm({
           <Button type="button" variant="outline" asChild>
             <Link href="/admin/sales">Cancel</Link>
           </Button>
-        </div>
+        </AdminFormActions>
       </form>
     </AdminFormShell>
   );

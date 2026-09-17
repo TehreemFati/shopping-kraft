@@ -10,6 +10,7 @@ import { ImageUploader } from "@/components/admin/ImageUploader";
 import {
   AdminFormShell,
   AdminFormSection,
+  AdminFormActions,
   FieldError,
 } from "@/components/admin/AdminFormShell";
 import { createBanner, updateBanner } from "@/lib/actions/banners";
@@ -53,54 +54,52 @@ export function BannerForm({ banner }: { banner?: Banner }) {
   }
 
   return (
-    <AdminFormShell
-      title={isEdit ? "Edit banner" : "Add banner"}
-      description="Hero slides for the storefront homepage."
-      className="max-w-2xl"
-    >
+    <AdminFormShell>
       <form onSubmit={handleSubmit} className="space-y-6">
         <AdminFormSection title="Copy">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              name="title"
-              required
-              defaultValue={banner?.title}
-              aria-invalid={!!errors.title}
-            />
-            <FieldError message={errors.title} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="subtitle">Subtitle</Label>
-            <Input
-              id="subtitle"
-              name="subtitle"
-              defaultValue={banner?.subtitle ?? ""}
-              aria-invalid={!!errors.subtitle}
-            />
-            <FieldError message={errors.subtitle} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="link_url">Link URL</Label>
-            <Input
-              id="link_url"
-              name="link_url"
-              defaultValue={banner?.link_url ?? ""}
-              aria-invalid={!!errors.link_url}
-            />
-            <FieldError message={errors.link_url} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="sort_order">Sort order</Label>
-            <Input
-              id="sort_order"
-              name="sort_order"
-              type="number"
-              defaultValue={banner?.sort_order ?? 0}
-              aria-invalid={!!errors.sort_order}
-            />
-            <FieldError message={errors.sort_order} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                name="title"
+                required
+                defaultValue={banner?.title}
+                aria-invalid={!!errors.title}
+              />
+              <FieldError message={errors.title} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="subtitle">Subtitle</Label>
+              <Input
+                id="subtitle"
+                name="subtitle"
+                defaultValue={banner?.subtitle ?? ""}
+                aria-invalid={!!errors.subtitle}
+              />
+              <FieldError message={errors.subtitle} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="link_url">Link URL</Label>
+              <Input
+                id="link_url"
+                name="link_url"
+                defaultValue={banner?.link_url ?? ""}
+                aria-invalid={!!errors.link_url}
+              />
+              <FieldError message={errors.link_url} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sort_order">Sort order</Label>
+              <Input
+                id="sort_order"
+                name="sort_order"
+                type="number"
+                defaultValue={banner?.sort_order ?? 0}
+                aria-invalid={!!errors.sort_order}
+              />
+              <FieldError message={errors.sort_order} />
+            </div>
           </div>
         </AdminFormSection>
 
@@ -122,7 +121,7 @@ export function BannerForm({ banner }: { banner?: Banner }) {
           value={banner?.is_active === false ? "false" : "true"}
         />
 
-        <div className="flex flex-wrap gap-2 border-t border-border/60 pt-4">
+        <AdminFormActions>
           <Button
             type="submit"
             disabled={isPending || !imageUrl}
@@ -137,7 +136,7 @@ export function BannerForm({ banner }: { banner?: Banner }) {
           <Button variant="outline" asChild>
             <Link href="/admin/banners">Cancel</Link>
           </Button>
-        </div>
+        </AdminFormActions>
       </form>
     </AdminFormShell>
   );

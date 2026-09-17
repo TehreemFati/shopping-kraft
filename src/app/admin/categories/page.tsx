@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
   getAdminCategories,
   listAdminCategories,
@@ -26,6 +24,7 @@ export default async function AdminCategoriesPage({
   const status = parseStatusFilter(sp.status);
   const page = parsePage(sp.page);
   const pageSize = parsePageSize(sp.pageSize);
+  const editId = firstParam(sp.edit) ?? null;
 
   const [result, allCategories] = await Promise.all([
     listAdminCategories({ q, status, page, pageSize }),
@@ -38,11 +37,13 @@ export default async function AdminCategoriesPage({
 
   return (
     <div>
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold sm:text-3xl">Categories</h1>
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/admin/categories/new">Add Category</Link>
-        </Button>
+      <div className="mb-8">
+        <h1 className="font-display text-2xl tracking-tight text-kraft-ink sm:text-3xl">
+          Categories
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Top-level aisles. Use the shelves icon to manage subcategories.
+        </p>
       </div>
 
       <AdminFiltersBar
@@ -67,22 +68,24 @@ export default async function AdminCategoriesPage({
       />
 
       {result.total === 0 ? (
-        <p className="text-muted-foreground">No categories found.</p>
-      ) : (
-        <>
-          <CategoriesTable
-            categories={result.data}
-            allCategories={allCategories}
-          />
-          <AdminPagination
-            page={result.page}
-            totalPages={result.totalPages}
-            total={result.total}
-            pageSize={result.pageSize}
-            searchParams={query}
-          />
-        </>
-      )}
+        <p className="mb-4 text-muted-foreground">No categories found.</p>
+      ) : null}
+
+      <CategoriesTable
+        categories={result.data}
+        allCategories={allCategories}
+        initialEditId={editId}
+      />
+
+      {result.total > 0 ? (
+        <AdminPagination
+          page={result.page}
+          totalPages={result.totalPages}
+          total={result.total}
+          pageSize={result.pageSize}
+          searchParams={query}
+        />
+      ) : null}
     </div>
   );
 }
