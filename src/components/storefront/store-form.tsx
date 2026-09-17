@@ -32,12 +32,12 @@ export function StoreFormField({
   return (
     <div className={cn("space-y-2", className)}>
       <Label htmlFor={htmlFor} className="text-sm font-medium text-kraft-ink/85">
+        {label}
         {required ? (
-          <span className="mr-1 text-destructive" aria-hidden>
+          <span className="ml-0.5 text-destructive" aria-hidden>
             *
           </span>
         ) : null}
-        {label}
       </Label>
       {children}
       {error ? (

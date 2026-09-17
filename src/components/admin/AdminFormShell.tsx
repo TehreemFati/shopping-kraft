@@ -111,12 +111,12 @@ export function FieldLabel({
 }) {
   return (
     <Label className={cn(className)} {...props}>
+      {children}
       {required ? (
-        <span className="text-destructive" aria-hidden>
+        <span className="ml-0.5 text-destructive" aria-hidden>
           *
         </span>
       ) : null}
-      {children}
     </Label>
   );
 }
