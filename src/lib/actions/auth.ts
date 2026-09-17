@@ -88,6 +88,38 @@ export async function updateProfile(formData: FormData) {
   return { success: true };
 }
 
+export async function updatePassword(formData: FormData) {
+  const current_password = String(formData.get("current_password") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const confirm_password = String(formData.get("confirm_password") ?? "");
+
+  if (password.length < 6) {
+    return { error: "Password must be at least 6 characters" };
+  }
+  if (password !== confirm_password) {
+    return { error: "New passwords do not match" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) throw new Error("Unauthorized");
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: current_password,
+  });
+  if (signInError) {
+    return { error: "Current password is incorrect" };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.message };
+
+  return { success: true };
+}
+
 export async function createAddress(formData: FormData) {
   const supabase = await createClient();
   const {

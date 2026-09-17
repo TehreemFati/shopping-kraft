@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/auth/LoginForm";
+import { AuthExperience } from "@/components/auth/AuthExperience";
 
 export const metadata = { title: "Sign In" };
 
@@ -10,8 +11,8 @@ export default async function LoginPage({
   const params = await searchParams;
 
   return (
-    <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4 py-16">
+    <AuthExperience mode="login">
       <LoginForm redirect={params.redirect} />
-    </div>
+    </AuthExperience>
   );
 }

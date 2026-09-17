@@ -4,6 +4,7 @@ import { getAllSettings, getCurrentUser } from "@/lib/queries/storefront";
 import { isAdminOrStaff } from "@/lib/auth/roles";
 import { CheckoutForm } from "@/components/storefront/CheckoutForm";
 import { PageBreadcrumbs } from "@/components/storefront/PageBreadcrumbs";
+import { StorePageShell } from "@/components/storefront/StorePageShell";
 
 export const metadata = { title: "Checkout" };
 
@@ -45,7 +46,7 @@ export default async function CheckoutPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <StorePageShell>
       <PageBreadcrumbs
         items={[
           { label: "Home", href: "/" },
@@ -53,7 +54,7 @@ export default async function CheckoutPage() {
           { label: "Checkout" },
         ]}
       />
-      <h1 className="mb-8 text-3xl font-bold">Checkout</h1>
+      <h1 className="mb-8 font-display text-3xl text-kraft-ink">Checkout</h1>
       <CheckoutForm
         items={items}
         shipping={shipping}
@@ -61,6 +62,6 @@ export default async function CheckoutPage() {
         jazzcashAccount={jazzcashAccount}
         easypaisaAccount={easypaisaAccount}
       />
-    </div>
+    </StorePageShell>
   );
 }

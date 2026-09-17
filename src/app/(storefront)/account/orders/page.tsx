@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/queries/storefront";
 import { getUserOrders } from "@/lib/actions/orders";
 import { formatPrice, ORDER_STATUS_LABELS } from "@/lib/utils/format";
+import { StoreSectionCard } from "@/components/storefront/store-form";
 
 export const metadata = { title: "My Orders" };
 
@@ -11,41 +11,52 @@ export default async function OrdersPage() {
   const orders = await getUserOrders(currentUser!.user.id);
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Order History</h2>
-      {orders.length === 0 ? (
-        <p className="text-muted-foreground">No orders yet.</p>
-      ) : (
-        orders.map((order) => (
-          <Card key={order.id}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base">{order.order_number}</CardTitle>
-              <Badge variant="outline">
-                {ORDER_STATUS_LABELS[order.status] ?? order.status}
-              </Badge>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                {order.order_items?.map((item) => (
-                  <div key={item.id} className="flex justify-between">
-                    <span>
-                      {item.product_name} × {item.quantity}
-                    </span>
-                    <span>{formatPrice(item.total_price)}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between border-t pt-2 font-semibold">
-                  <span>Total</span>
-                  <span>{formatPrice(order.total)}</span>
+    <div className="space-y-6">
+      <StoreSectionCard
+        title="Order history"
+        description="Track past and current orders."
+      >
+        {orders.length === 0 ? (
+          <p className="text-muted-foreground">No orders yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="rounded-xl border border-kraft-ink/10 bg-kraft-mist/30 p-4"
+              >
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-medium text-kraft-ink">
+                    {order.order_number}
+                  </p>
+                  <Badge variant="outline">
+                    {ORDER_STATUS_LABELS[order.status] ?? order.status}
+                  </Badge>
                 </div>
-                <p className="text-muted-foreground">
-                  {new Date(order.created_at).toLocaleDateString()}
-                </p>
+                <div className="space-y-2 text-sm">
+                  {order.order_items?.map((item) => (
+                    <div key={item.id} className="flex justify-between gap-4">
+                      <span className="text-kraft-ink/80">
+                        {item.product_name} × {item.quantity}
+                      </span>
+                      <span className="shrink-0">
+                        {formatPrice(item.total_price)}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between border-t border-kraft-ink/10 pt-2 font-semibold text-kraft-ink">
+                    <span>Total</span>
+                    <span>{formatPrice(order.total)}</span>
+                  </div>
+                  <p className="text-muted-foreground">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))
-      )}
+            ))}
+          </div>
+        )}
+      </StoreSectionCard>
     </div>
   );
 }

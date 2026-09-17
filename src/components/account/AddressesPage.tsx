@@ -3,11 +3,14 @@
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createAddress, deleteAddress } from "@/lib/actions/auth";
 import { toast } from "sonner";
 import type { Address } from "@/types/database";
+import {
+  StoreFormField,
+  StoreSectionCard,
+  storeInputClassName,
+} from "@/components/storefront/store-form";
 
 export function AddressesPage({ addresses }: { addresses: Address[] }) {
   const [isPending, startTransition] = useTransition();
@@ -34,78 +37,151 @@ export function AddressesPage({ addresses }: { addresses: Address[] }) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Saved Addresses</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {addresses.length === 0 ? (
-            <p className="text-muted-foreground">No saved addresses.</p>
-          ) : (
-            addresses.map((addr) => (
+      <StoreSectionCard
+        title="Saved addresses"
+        description="Addresses you can use quickly at checkout."
+      >
+        {addresses.length === 0 ? (
+          <p className="text-muted-foreground">No saved addresses yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {addresses.map((addr) => (
               <div
                 key={addr.id}
-                className="flex items-start justify-between rounded-md border p-4"
+                className="flex items-start justify-between gap-4 rounded-xl border border-kraft-ink/10 bg-kraft-mist/30 p-4"
               >
-                <div>
-                  {addr.label && <p className="font-medium">{addr.label}</p>}
-                  <p className="text-sm">{addr.line1}</p>
-                  {addr.line2 && <p className="text-sm">{addr.line2}</p>}
-                  <p className="text-sm">
-                    {addr.city}, {addr.province} {addr.postal_code}
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {addr.label ? (
+                      <p className="font-medium text-kraft-ink">{addr.label}</p>
+                    ) : null}
+                    {addr.is_default ? (
+                      <span className="rounded-md bg-kraft-citrus/80 px-2 py-0.5 text-xs font-medium text-kraft-ink">
+                        Default
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-1 text-sm text-kraft-ink/80">{addr.line1}</p>
+                  {addr.line2 ? (
+                    <p className="text-sm text-kraft-ink/80">{addr.line2}</p>
+                  ) : null}
+                  <p className="text-sm text-muted-foreground">
+                    {addr.city}, {addr.province}
+                    {addr.postal_code ? ` ${addr.postal_code}` : ""}
                   </p>
-                  {addr.is_default && (
-                    <span className="text-xs text-primary">Default</span>
-                  )}
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   disabled={isPending}
                   onClick={() => handleDelete(addr.id)}
+                  className="shrink-0 text-destructive hover:text-destructive"
                 >
                   Remove
                 </Button>
               </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+            ))}
+          </div>
+        )}
+      </StoreSectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Add New Address</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCreate} className="grid max-w-lg gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="label">Label</Label>
-              <Input id="label" name="label" placeholder="Home, Office..." />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="line1">Address</Label>
-              <Input id="line1" name="line1" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" name="city" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="province">Province</Label>
-              <Input id="province" name="province" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="postal_code">Postal Code</Label>
-              <Input id="postal_code" name="postal_code" />
-            </div>
-            <div className="flex items-end sm:col-span-2">
-              <Button type="submit" disabled={isPending}>
-                Save Address
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      <StoreSectionCard
+        title="Add new address"
+        description="Save a home, office, or gift delivery address."
+      >
+        <form
+          onSubmit={handleCreate}
+          className="grid max-w-2xl gap-4 sm:grid-cols-2"
+        >
+          <StoreFormField
+            label="Label"
+            htmlFor="label"
+            className="sm:col-span-2"
+          >
+            <Input
+              id="label"
+              name="label"
+              placeholder="Home, Office…"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <StoreFormField
+            label="Address line 1"
+            htmlFor="line1"
+            className="sm:col-span-2"
+          >
+            <Input
+              id="line1"
+              name="line1"
+              required
+              placeholder="Street address"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <StoreFormField
+            label="Address line 2"
+            htmlFor="line2"
+            className="sm:col-span-2"
+            hint="Apartment, suite, landmark — optional"
+          >
+            <Input
+              id="line2"
+              name="line2"
+              placeholder="Apartment, floor, landmark…"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <StoreFormField label="City" htmlFor="city">
+            <Input
+              id="city"
+              name="city"
+              required
+              placeholder="City"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <StoreFormField label="Province" htmlFor="province">
+            <Input
+              id="province"
+              name="province"
+              required
+              placeholder="Province"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <StoreFormField label="Postal code" htmlFor="postal_code">
+            <Input
+              id="postal_code"
+              name="postal_code"
+              placeholder="Optional"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <div className="flex items-center gap-2 sm:col-span-2">
+            <input
+              id="is_default"
+              name="is_default"
+              type="checkbox"
+              className="size-4 rounded border-kraft-ink/25 text-kraft-ink accent-kraft-ink"
+            />
+            <label
+              htmlFor="is_default"
+              className="text-sm text-kraft-ink/85"
+            >
+              Set as default address
+            </label>
+          </div>
+          <div className="sm:col-span-2">
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+            >
+              {isPending ? "Saving..." : "Save address"}
+            </Button>
+          </div>
+        </form>
+      </StoreSectionCard>
     </div>
   );
 }

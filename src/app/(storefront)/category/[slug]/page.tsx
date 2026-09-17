@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { PageBreadcrumbs } from "@/components/storefront/PageBreadcrumbs";
 import { ImageLinkSlider } from "@/components/storefront/ImageLinkSlider";
+import { StorePageShell } from "@/components/storefront/StorePageShell";
 import {
   getCategoryById,
   getCategoryBySlug,
@@ -52,7 +53,7 @@ export default async function CategoryPage({
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <StorePageShell>
       <PageBreadcrumbs items={crumbs} />
 
       <div className="mb-8 grid gap-6 md:grid-cols-[minmax(0,1fr)_240px] md:items-end">
@@ -109,6 +110,6 @@ export default async function CategoryPage({
           ))}
         </div>
       )}
-    </div>
+    </StorePageShell>
   );
 }

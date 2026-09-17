@@ -4,16 +4,15 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PasswordInput } from "@/components/ui/password-input";
 import { register } from "@/lib/actions/auth";
 import { toast } from "sonner";
+import {
+  StoreFormField,
+  storeInputClassName,
+} from "@/components/storefront/store-form";
+
+const inputClass = `${storeInputClassName} bg-white shadow-[inset_0_1px_0_oklch(1_0_0/0.8)]`;
 
 export function RegisterForm() {
   const [isPending, startTransition] = useTransition();
@@ -32,45 +31,75 @@ export function RegisterForm() {
   }
 
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Create Account</CardTitle>
-        <CardDescription>Register to track orders and save addresses</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Full Name</Label>
-            <Input id="full_name" name="full_name" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm_password">Confirm Password</Label>
-            <Input
-              id="confirm_password"
-              name="confirm_password"
-              type="password"
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Creating account..." : "Register"}
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Sign In
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+    <div>
+      <p className="text-xs font-semibold tracking-[0.18em] text-kraft-ink/45 uppercase">
+        Create account
+      </p>
+      <h2 className="mt-2 font-display text-3xl tracking-tight text-kraft-ink">
+        Let&apos;s get started
+      </h2>
+      <p className="mt-2 text-sm text-kraft-ink/60">
+        Save addresses, track orders, and checkout in a few taps.
+      </p>
+
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <StoreFormField label="Full name" htmlFor="full_name">
+          <Input
+            id="full_name"
+            name="full_name"
+            required
+            placeholder="Your full name"
+            className={inputClass}
+          />
+        </StoreFormField>
+        <StoreFormField label="Email" htmlFor="email">
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            required
+            placeholder="you@example.com"
+            className={inputClass}
+          />
+        </StoreFormField>
+        <StoreFormField label="Password" htmlFor="password">
+          <PasswordInput
+            id="password"
+            name="password"
+            required
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
+            className={inputClass}
+          />
+        </StoreFormField>
+        <StoreFormField label="Confirm password" htmlFor="confirm_password">
+          <PasswordInput
+            id="confirm_password"
+            name="confirm_password"
+            required
+            autoComplete="new-password"
+            placeholder="Repeat your password"
+            className={inputClass}
+          />
+        </StoreFormField>
+        <Button
+          type="submit"
+          className="mt-1 h-12 w-full rounded-xl bg-kraft-ink text-base font-semibold text-kraft-citrus transition hover:bg-kraft-ink/90 hover:brightness-105"
+          disabled={isPending}
+        >
+          {isPending ? "Creating account..." : "Create account"}
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-kraft-ink/55">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-semibold text-kraft-ink underline decoration-kraft-citrus/80 underline-offset-4 transition hover:decoration-kraft-citrus"
+        >
+          Sign In
+        </Link>
+      </p>
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { AddToCartButton } from "@/components/storefront/AddToCartButton";
 import { PageBreadcrumbs } from "@/components/storefront/PageBreadcrumbs";
+import { StorePageShell } from "@/components/storefront/StorePageShell";
 import { Badge } from "@/components/ui/badge";
 import { getProductBySlug } from "@/lib/queries/storefront";
 import { formatPrice, getEffectivePrice } from "@/lib/utils/format";
@@ -36,7 +37,7 @@ export default async function ProductPage({
   const category = product.categories;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <StorePageShell>
       <PageBreadcrumbs
         items={[
           { label: "Home", href: "/" },
@@ -135,6 +136,6 @@ export default async function ProductPage({
           )}
         </div>
       </div>
-    </div>
+    </StorePageShell>
   );
 }

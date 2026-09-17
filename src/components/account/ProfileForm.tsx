@@ -3,16 +3,27 @@
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { updateProfile } from "@/lib/actions/auth";
+import { PasswordInput } from "@/components/ui/password-input";
+import { updatePassword, updateProfile } from "@/lib/actions/auth";
 import { toast } from "sonner";
 import type { Profile } from "@/types/database";
+import {
+  StoreFormField,
+  StoreSectionCard,
+  storeInputClassName,
+} from "@/components/storefront/store-form";
 
-export function ProfileForm({ profile }: { profile: Profile }) {
+export function ProfileForm({
+  profile,
+  email,
+}: {
+  profile: Profile;
+  email: string | null;
+}) {
   const [isPending, startTransition] = useTransition();
+  const [passwordPending, startPasswordTransition] = useTransition();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleProfileSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
@@ -21,34 +32,162 @@ export function ProfileForm({ profile }: { profile: Profile }) {
     });
   }
 
+  function handlePasswordSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    startPasswordTransition(async () => {
+      const result = await updatePassword(formData);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Password updated");
+      form.reset();
+    });
+  }
+
+  const memberSince = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "—";
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="max-w-md space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Full Name</Label>
+    <div className="space-y-6">
+      <StoreSectionCard
+        title="Account"
+        description="Your login email and membership details."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <StoreFormField label="Email" htmlFor="email">
+            <Input
+              id="email"
+              type="email"
+              value={email ?? ""}
+              readOnly
+              disabled
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <StoreFormField label="Member since" htmlFor="member_since">
+            <Input
+              id="member_since"
+              value={memberSince}
+              readOnly
+              disabled
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+        </div>
+      </StoreSectionCard>
+
+      <StoreSectionCard
+        title="Personal information"
+        description="How we address you and reach you about orders."
+      >
+        <form
+          onSubmit={handleProfileSubmit}
+          className="grid max-w-xl gap-4 sm:grid-cols-2"
+        >
+          <StoreFormField
+            label="Full name"
+            htmlFor="full_name"
+            className="sm:col-span-2"
+          >
             <Input
               id="full_name"
               name="full_name"
               defaultValue={profile.full_name ?? ""}
+              placeholder="Your full name"
+              className={storeInputClassName}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+          </StoreFormField>
+          <StoreFormField
+            label="Phone"
+            htmlFor="phone"
+            className="sm:col-span-2"
+          >
             <Input
               id="phone"
               name="phone"
+              type="tel"
               defaultValue={profile.phone ?? ""}
+              placeholder="03XX XXXXXXX"
+              className={storeInputClassName}
             />
+          </StoreFormField>
+          <div className="sm:col-span-2">
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="bg-kraft-ink text-kraft-citrus hover:bg-kraft-ink/90"
+            >
+              {isPending ? "Saving..." : "Save changes"}
+            </Button>
           </div>
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "Saving..." : "Save Changes"}
-          </Button>
         </form>
-      </CardContent>
-    </Card>
+      </StoreSectionCard>
+
+      <StoreSectionCard
+        title="Security"
+        description="Update your password. Use at least 6 characters."
+      >
+        <form
+          onSubmit={handlePasswordSubmit}
+          className="grid max-w-xl gap-4 sm:grid-cols-2"
+        >
+          <StoreFormField
+            label="Current password"
+            htmlFor="current_password"
+            className="sm:col-span-2"
+          >
+            <PasswordInput
+              id="current_password"
+              name="current_password"
+              required
+              autoComplete="current-password"
+              placeholder="Enter current password"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <StoreFormField label="New password" htmlFor="password">
+            <PasswordInput
+              id="password"
+              name="password"
+              required
+              autoComplete="new-password"
+              placeholder="New password"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <StoreFormField
+            label="Confirm new password"
+            htmlFor="confirm_password"
+          >
+            <PasswordInput
+              id="confirm_password"
+              name="confirm_password"
+              required
+              autoComplete="new-password"
+              placeholder="Confirm new password"
+              className={storeInputClassName}
+            />
+          </StoreFormField>
+          <div className="sm:col-span-2">
+            <Button
+              type="submit"
+              disabled={passwordPending}
+              variant="outline"
+              className="border-kraft-ink/20"
+            >
+              {passwordPending ? "Updating..." : "Update password"}
+            </Button>
+          </div>
+        </form>
+      </StoreSectionCard>
+    </div>
   );
 }
