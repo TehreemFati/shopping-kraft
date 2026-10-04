@@ -112,8 +112,8 @@ export function ProductForm({ categories, product }: ProductFormProps) {
     <AdminFormShell>
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <AdminFormSection title="Basics" description="Name, URL slug, and category.">
-          <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-12 space-y-2 sm:col-span-6">
+          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="min-w-0 space-y-2">
               <FieldLabel htmlFor="name" required>
                 Product Name
               </FieldLabel>
@@ -127,7 +127,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               />
               <FieldError message={errors.name} />
             </div>
-            <div className="col-span-12 space-y-2 sm:col-span-6">
+            <div className="min-w-0 space-y-2">
               <SlugInput
                 name="slug"
                 defaultValue={product?.slug}
@@ -136,7 +136,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               />
               <FieldError message={errors.slug} />
             </div>
-            <div className="col-span-12 space-y-2 sm:col-span-6">
+            <div className="min-w-0 space-y-2">
               <FieldLabel required>Category</FieldLabel>
               <Select
                 value={categoryId}
@@ -160,7 +160,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               </Select>
               <FieldError message={errors.category_id} />
             </div>
-            <div className="col-span-12 space-y-2">
+            <div className="min-w-0 space-y-2 sm:col-span-2">
               <FieldLabel htmlFor="description">Description</FieldLabel>
               <Textarea
                 id="description"
@@ -178,8 +178,8 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           title="Pricing & stock"
           description="PKR prices and available quantity."
         >
-          <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-12 space-y-2 sm:col-span-6">
+          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="min-w-0 space-y-2">
               <FieldLabel htmlFor="price" required>
                 Price (PKR)
               </FieldLabel>
@@ -195,7 +195,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               />
               <FieldError message={errors.price} />
             </div>
-            <div className="col-span-12 space-y-2 sm:col-span-6">
+            <div className="min-w-0 space-y-2">
               <FieldLabel htmlFor="sale_price">Sale Price</FieldLabel>
               <NumericInput
                 id="sale_price"
@@ -208,7 +208,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               />
               <FieldError message={errors.sale_price} />
             </div>
-            <div className="col-span-12 space-y-2 sm:col-span-6">
+            <div className="min-w-0 space-y-2">
               <FieldLabel htmlFor="sku">SKU</FieldLabel>
               <Input
                 id="sku"
@@ -218,7 +218,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               />
               <FieldError message={errors.sku} />
             </div>
-            <div className="col-span-12 space-y-2 sm:col-span-6">
+            <div className="min-w-0 space-y-2">
               <FieldLabel htmlFor="stock">Stock</FieldLabel>
               <NumericInput
                 id="stock"
@@ -238,15 +238,13 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           title="Images"
           description="Upload photos or paste image URLs. First image is primary."
         >
-          <div className="col-span-12">
-            <ImageUploader
-              type="product"
-              productId={product?.id}
-              value={imageUrls}
-              onChange={setImageUrls}
-              onUploadingChange={setImageUploading}
-            />
-          </div>
+          <ImageUploader
+            type="product"
+            productId={product?.id}
+            value={imageUrls}
+            onChange={setImageUrls}
+            onUploadingChange={setImageUploading}
+          />
         </AdminFormSection>
 
         <input type="hidden" name="is_active" value="true" />

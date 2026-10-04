@@ -35,7 +35,7 @@ export function AdminFormShell({
           </div>
         </div>
       ) : null}
-      <div className="space-y-6 p-5 sm:p-6 lg:p-8">{children}</div>
+      <div className="min-w-0 space-y-6 p-4 sm:p-6 lg:p-8">{children}</div>
     </div>
   );
 }
@@ -54,11 +54,11 @@ export function AdminFormSection({
   return (
     <section
       className={cn(
-        "space-y-4 rounded-xl border border-kraft-ink/10 bg-kraft-mist/25 p-4 sm:p-5 lg:p-6",
+        "min-w-0 space-y-4 overflow-hidden rounded-xl border border-kraft-ink/10 bg-kraft-mist/25 p-3 sm:p-5 lg:p-6",
         className,
       )}
     >
-      <div>
+      <div className="min-w-0">
         <h3 className="text-xs font-semibold tracking-[0.16em] text-kraft-ink uppercase">
           {title}
         </h3>
@@ -66,7 +66,7 @@ export function AdminFormSection({
           <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      <div className="space-y-4">{children}</div>
+      <div className="min-w-0 space-y-4">{children}</div>
     </section>
   );
 }
@@ -82,7 +82,7 @@ export function AdminFormActions({
   return (
     <div
       className={cn(
-        "sticky bottom-0 z-10 -mx-5 mt-2 flex flex-wrap items-center gap-2 border-t border-kraft-ink/10 bg-card/95 px-5 py-4 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8",
+        "sticky bottom-0 z-10 -mx-4 mt-2 flex flex-col gap-2 border-t border-kraft-ink/10 bg-card/95 px-4 py-4 backdrop-blur-sm sm:-mx-6 sm:flex-row sm:flex-wrap sm:items-center sm:px-6 lg:-mx-8 lg:px-8 [&>*]:w-full sm:[&>*]:w-auto",
         className,
       )}
     >

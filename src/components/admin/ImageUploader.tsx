@@ -119,13 +119,24 @@ export function ImageUploader({
             setProgress(Math.round(((i + 1) / list.length) * 100));
           } else {
             const msg = result.error ?? "Upload failed";
-            // Keep preview so the user still sees the image; mark error.
+            const idx = newUrls.lastIndexOf(previewUrl);
+            if (idx >= 0) {
+              URL.revokeObjectURL(previewUrl);
+              newUrls.splice(idx, 1);
+              onChange([...newUrls]);
+            }
             setInlineError(msg);
             toast.error(msg);
           }
         } catch (err) {
           const msg =
             err instanceof Error ? err.message : "Upload failed unexpectedly";
+          const idx = newUrls.lastIndexOf(previewUrl);
+          if (idx >= 0) {
+            URL.revokeObjectURL(previewUrl);
+            newUrls.splice(idx, 1);
+            onChange([...newUrls]);
+          }
           setInlineError(msg);
           toast.error(msg);
         }
@@ -190,11 +201,11 @@ export function ImageUploader({
       ) : null}
 
       {value.length > 0 ? (
-        <div className="flex flex-wrap gap-3">
+        <div className="flex max-w-full flex-wrap gap-2 sm:gap-3">
           {value.map((url, i) => (
             <div
               key={`${url}-${i}`}
-              className="group relative h-32 w-32 overflow-hidden rounded-xl border border-border bg-kraft-mist/40 shadow-sm"
+              className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-border bg-kraft-mist/40 shadow-sm sm:h-28 sm:w-28 md:h-32 md:w-32"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -280,8 +291,8 @@ export function ImageUploader({
           <Label htmlFor={`${inputId}-url`} className="text-muted-foreground">
             Or paste image URL
           </Label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+            <div className="relative min-w-0 flex-1">
               <Link2 className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id={`${inputId}-url`}
@@ -301,6 +312,7 @@ export function ImageUploader({
             <Button
               type="button"
               variant="outline"
+              className="shrink-0"
               onClick={addUrl}
               disabled={uploading}
             >

@@ -20,8 +20,8 @@ function Sheet({
         // Only close via Cancel / X / explicit actions — not outside click or Escape.
         if (
           !open &&
-          (eventDetails.reason === "outsidePress" ||
-            eventDetails.reason === "escapeKey")
+          (eventDetails.reason === "outside-press" ||
+            eventDetails.reason === "escape-key")
         ) {
           return
         }
