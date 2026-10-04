@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useOptionalLoading } from "@/components/providers/loading-provider";
 
 type PendingItem = { id: string; label: string };
 
@@ -24,6 +25,7 @@ export function useConfirmDelete({
   descriptionTemplate = "Delete “{label}”? This cannot be undone from the list.",
   confirmLabel = "Delete",
 }: UseConfirmDeleteOptions) {
+  const loading = useOptionalLoading();
   const [isPending, startTransition] = useTransition();
   const [pending, setPending] = useState<PendingItem | null>(null);
 
@@ -36,16 +38,21 @@ export function useConfirmDelete({
   const confirmDelete = useCallback(() => {
     if (!pending) return;
     const { id } = pending;
+    loading?.show();
     startTransition(async () => {
-      const result = await onDelete(id);
-      if (result && "error" in result && result.error) {
-        toast.error(result.error);
-        return;
+      try {
+        const result = await onDelete(id);
+        if (result && "error" in result && result.error) {
+          toast.error(result.error);
+          return;
+        }
+        toast.success(successMessage);
+        setPending(null);
+      } finally {
+        loading?.hide();
       }
-      toast.success(successMessage);
-      setPending(null);
     });
-  }, [pending, onDelete, successMessage]);
+  }, [pending, onDelete, successMessage, loading]);
 
   const dialogProps = {
     open: pending !== null,

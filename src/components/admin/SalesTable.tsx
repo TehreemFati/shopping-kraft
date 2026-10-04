@@ -1,8 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { AdminRowActions } from "@/components/admin/AdminRowActions";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { softDeleteSaleCampaign } from "@/lib/actions/sales";
 import type { SaleCampaign } from "@/types/database";
@@ -55,18 +53,13 @@ export function SalesTable({ campaigns }: { campaigns: SaleCampaign[] }) {
               <TableCell>
                 <StatusBadge active={sale.is_active} />
               </TableCell>
-              <TableCell className="space-x-1 text-right">
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/admin/sales/${sale.id}/edit`}>Edit</Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={isPending}
-                  onClick={() => requestDelete(sale.id, sale.name)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <TableCell className="text-right">
+                <AdminRowActions
+                  editHref={`/admin/sales/${sale.id}/edit`}
+                  editStyle="text"
+                  deleteDisabled={isPending}
+                  onDelete={() => requestDelete(sale.id, sale.name)}
+                />
               </TableCell>
             </TableRow>
           ))}

@@ -154,7 +154,7 @@ export function CouponForm({ coupon }: { coupon?: Coupon }) {
         />
 
         <AdminFormActions>
-          <Button type="submit" disabled={isPending} variant="kraft">
+          <Button type="submit" loading={isPending} variant="kraft">
             {isPending
               ? "Saving…"
               : isEdit

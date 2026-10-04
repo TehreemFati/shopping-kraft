@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +16,7 @@ import { SlugInput } from "@/components/admin/SlugInput";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { FieldError, FieldLabel } from "@/components/admin/AdminFormShell";
+import { usePendingAction } from "@/hooks/use-pending-action";
 import { createCategory, updateCategory } from "@/lib/actions/categories";
 import {
   flattenFieldErrors,
@@ -43,7 +44,7 @@ export function CategoryDialog({
 }: CategoryDialogProps) {
   const isEdit = Boolean(category);
   const isSub = Boolean(parentId);
-  const [isPending, startTransition] = useTransition();
+  const { isPending, run } = usePendingAction();
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [description, setDescription] = useState("");
@@ -78,7 +79,7 @@ export function CategoryDialog({
     formData.set("sort_order", sortOrder);
     formData.set("description", description);
 
-    startTransition(async () => {
+    run(async () => {
       const result = isEdit
         ? await updateCategory(category!.id, formData)
         : await createCategory(formData);
@@ -224,11 +225,7 @@ export function CategoryDialog({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isPending}
-              variant="kraft"
-            >
+            <Button type="submit" loading={isPending} variant="kraft">
               {isPending ? "Saving…" : isEdit ? "Save changes" : "Create"}
             </Button>
           </DialogFooter>

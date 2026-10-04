@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
   StoreSectionCard,
   storeInputClassName,
 } from "@/components/storefront/store-form";
+import { usePendingAction } from "@/hooks/use-pending-action";
 import { createOrder } from "@/lib/actions/orders";
 import { formatPrice } from "@/lib/utils/format";
 import { toast } from "sonner";
@@ -46,7 +47,7 @@ export function CheckoutForm({
   easypaisaAccount,
 }: CheckoutFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const { isPending, run } = usePendingAction();
   const [paymentMethod, setPaymentMethod] =
     useState<PrepaidMethod>("jazzcash");
   const [discount, setDiscount] = useState(0);
@@ -73,7 +74,7 @@ export function CheckoutForm({
     const formData = new FormData(e.currentTarget);
     formData.set("payment_method", paymentMethod);
 
-    startTransition(async () => {
+    run(async () => {
       const result = await createOrder(formData);
       if (result.error) {
         const errors = Object.values(result.error).flat();
@@ -281,7 +282,7 @@ export function CheckoutForm({
               variant="kraft"
               className="w-full"
               size="lg"
-              disabled={isPending}
+              loading={isPending}
             >
               {isPending
                 ? "Placing Order..."

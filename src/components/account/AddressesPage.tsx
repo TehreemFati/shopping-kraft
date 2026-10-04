@@ -1,20 +1,25 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
+import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AddressFields } from "@/components/storefront/AddressFields";
-import {
-  StoreSectionCard,
-} from "@/components/storefront/store-form";
+import { StoreSectionCard } from "@/components/storefront/store-form";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
-import { createAddress, deleteAddress } from "@/lib/actions/auth";
+import { usePendingAction } from "@/hooks/use-pending-action";
+import {
+  createAddress,
+  deleteAddress,
+  updateAddress,
+} from "@/lib/actions/auth";
 import { toast } from "sonner";
 import type { Address } from "@/types/database";
 
 export function AddressesPage({ addresses }: { addresses: Address[] }) {
-  const [isPending, startTransition] = useTransition();
+  const [editing, setEditing] = useState<Address | null>(null);
+  const { isPending, run } = usePendingAction();
   const { isPending: isDeleting, requestDelete, dialogProps } =
     useConfirmDelete({
       onDelete: deleteAddress,
@@ -26,13 +31,29 @@ export function AddressesPage({ addresses }: { addresses: Address[] }) {
 
   function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    startTransition(async () => {
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    run(async () => {
       const result = await createAddress(formData);
       if (result.error) toast.error(result.error);
       else {
         toast.success("Address saved");
-        e.currentTarget.reset();
+        form.reset();
+      }
+    });
+  }
+
+  function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editing) return;
+    const formData = new FormData(e.currentTarget);
+    const id = editing.id;
+    run(async () => {
+      const result = await updateAddress(id, formData);
+      if (result.error) toast.error(result.error);
+      else {
+        toast.success("Address updated");
+        setEditing(null);
       }
     });
   }
@@ -72,17 +93,28 @@ export function AddressesPage({ addresses }: { addresses: Address[] }) {
                     {addr.postal_code ? ` ${addr.postal_code}` : ""}
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={isPending || isDeleting}
-                  onClick={() =>
-                    requestDelete(addr.id, addr.label || addr.line1)
-                  }
-                  className="shrink-0 text-destructive hover:text-destructive"
-                >
-                  Remove
-                </Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={isPending || isDeleting}
+                    onClick={() => setEditing(addr)}
+                    aria-label={`Edit ${addr.label || addr.line1}`}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={isPending || isDeleting}
+                    onClick={() =>
+                      requestDelete(addr.id, addr.label || addr.line1)
+                    }
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Remove
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -90,14 +122,56 @@ export function AddressesPage({ addresses }: { addresses: Address[] }) {
       </StoreSectionCard>
 
       <StoreSectionCard
-        title="Add new address"
-        description="Save a home, office, or gift delivery address."
+        title={editing ? "Edit address" : "Add new address"}
+        description={
+          editing
+            ? "Update this saved delivery address."
+            : "Save a home, office, or gift delivery address."
+        }
       >
-        <form onSubmit={handleCreate} className="max-w-2xl space-y-4">
-          <AddressFields showMeta />
-          <Button type="submit" disabled={isPending} variant="kraft">
-            {isPending ? "Saving..." : "Save address"}
-          </Button>
+        <form
+          key={editing?.id ?? "create"}
+          onSubmit={editing ? handleUpdate : handleCreate}
+          className="max-w-2xl space-y-4"
+          noValidate
+        >
+          <AddressFields
+            showMeta
+            defaults={
+              editing
+                ? {
+                    label: editing.label,
+                    line1: editing.line1,
+                    line2: editing.line2,
+                    city: editing.city,
+                    province: editing.province,
+                    postal_code: editing.postal_code,
+                    is_default: editing.is_default,
+                  }
+                : undefined
+            }
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" loading={isPending} variant="kraft">
+              {editing
+                ? isPending
+                  ? "Updating..."
+                  : "Update address"
+                : isPending
+                  ? "Saving..."
+                  : "Save address"}
+            </Button>
+            {editing ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setEditing(null)}
+              >
+                Cancel
+              </Button>
+            ) : null}
+          </div>
         </form>
       </StoreSectionCard>
 

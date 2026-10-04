@@ -68,7 +68,7 @@ export function ConfirmDialog({
           </Button>
           <Button
             type="button"
-            disabled={loading}
+            loading={loading}
             onClick={onConfirm}
             variant={variant === "destructive" ? undefined : "kraft"}
             className={

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
+import { usePendingAction } from "@/hooks/use-pending-action";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ export function SaleForm({
   products: ProductOption[];
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const { isPending, run } = usePendingAction();
   const [errors, setErrors] = useState<FormErrors>({});
   const [name, setName] = useState(sale?.name ?? "");
   const [isActive, setIsActive] = useState(sale?.is_active ?? true);
@@ -85,7 +86,7 @@ export function SaleForm({
       if (prices[id]?.trim()) formData.set(`price_${id}`, prices[id]);
     }
 
-    startTransition(async () => {
+    run(async () => {
       const result = isEdit
         ? await updateSaleCampaign(sale!.id, formData)
         : await createSaleCampaign(formData);
@@ -246,7 +247,7 @@ export function SaleForm({
         <AdminFormActions>
           <Button
             type="submit"
-            disabled={isPending}
+            loading={isPending}
             variant="kraft"
           >
             {isPending

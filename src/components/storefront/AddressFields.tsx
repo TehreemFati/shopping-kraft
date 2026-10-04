@@ -18,6 +18,7 @@ type AddressFieldsProps = {
     city?: string | null;
     province?: string | null;
     postal_code?: string | null;
+    is_default?: boolean | null;
   };
 };
 
@@ -107,6 +108,7 @@ export function AddressFields({
             id="is_default"
             name="is_default"
             type="checkbox"
+            defaultChecked={Boolean(defaults?.is_default)}
             className="size-4 rounded border-kraft-ink/25 text-kraft-ink accent-kraft-ink"
           />
           <label htmlFor="is_default" className="text-sm text-kraft-ink/85">

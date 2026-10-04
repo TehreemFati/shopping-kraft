@@ -163,6 +163,48 @@ export async function createAddress(formData: FormData) {
   return { success: true };
 }
 
+export async function updateAddress(id: string, formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const parsed = addressSchema.safeParse({
+    label: String(formData.get("label") ?? "") || undefined,
+    line1: formData.get("line1"),
+    line2: String(formData.get("line2") ?? "") || undefined,
+    city: formData.get("city"),
+    province: formData.get("province"),
+    postal_code: String(formData.get("postal_code") ?? "") || undefined,
+    is_default: formData.get("is_default") === "on",
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Invalid address",
+    };
+  }
+
+  const { error } = await supabase
+    .from("addresses")
+    .update({
+      label: parsed.data.label ?? null,
+      line1: parsed.data.line1,
+      line2: parsed.data.line2 ?? null,
+      city: parsed.data.city,
+      province: parsed.data.province,
+      postal_code: parsed.data.postal_code ?? null,
+      is_default: parsed.data.is_default,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .is("deleted_at", null);
+
+  if (error) return { error: error.message };
+  revalidatePath("/account/addresses");
+  return { success: true };
+}
+
 export async function deleteAddress(id: string) {
   const supabase = await createClient();
   const {

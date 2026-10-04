@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState } from "react";
+import { usePendingAction } from "@/hooks/use-pending-action";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ interface StaffFormProps {
 
 export function StaffForm({ staff }: StaffFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const { isPending, run } = usePendingAction();
   const [errors, setErrors] = useState<FormErrors>({});
   const [permissions, setPermissions] = useState<Permission[]>(
     (staff?.staff_permissions?.permissions as Permission[]) ?? [
@@ -80,7 +81,7 @@ export function StaffForm({ staff }: StaffFormProps) {
     formData.delete("permissions");
     permissions.forEach((p) => formData.append("permissions", p));
 
-    startTransition(async () => {
+    run(async () => {
       const result = isEdit
         ? await updateStaff(staff!.id, formData)
         : await createStaff(formData);
@@ -212,7 +213,8 @@ export function StaffForm({ staff }: StaffFormProps) {
         <AdminFormActions>
           <Button
             type="submit"
-            disabled={isPending || permissions.length === 0}
+            loading={isPending}
+            disabled={permissions.length === 0}
             variant="kraft"
           >
             {isPending

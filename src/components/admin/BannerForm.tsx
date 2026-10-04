@@ -126,7 +126,7 @@ export function BannerForm({ banner }: { banner?: Banner }) {
         />
 
         <AdminFormActions>
-          <Button type="submit" disabled={isPending} variant="kraft">
+          <Button type="submit" loading={isPending} variant="kraft">
             {isPending
               ? "Saving…"
               : isEdit

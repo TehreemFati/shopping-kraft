@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
+import { usePendingAction } from "@/hooks/use-pending-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NumericInput } from "@/components/ui/numeric-input";
@@ -24,7 +25,7 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ settings }: SettingsFormProps) {
-  const [isPending, startTransition] = useTransition();
+  const { isPending, run } = usePendingAction();
   const [errors, setErrors] = useState<FormErrors>({});
   const bank = (settings.bank_account ?? {}) as Record<string, string>;
   const jazzcash = (settings.jazzcash_account ?? {}) as Record<string, string>;
@@ -34,7 +35,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    startTransition(async () => {
+    run(async () => {
       const result = await updateSettings(formData);
       if (result?.error) {
         const flat = flattenFieldErrors(
@@ -210,7 +211,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         <AdminFormActions>
           <Button
             type="submit"
-            disabled={isPending}
+            loading={isPending}
             variant="kraft"
           >
             {isPending ? "Saving…" : "Save Settings"}

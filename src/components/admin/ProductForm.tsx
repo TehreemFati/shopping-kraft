@@ -256,7 +256,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
         <AdminFormActions>
           <Button
             type="submit"
-            disabled={isPending}
+            loading={isPending}
             variant="kraft"
           >
             {isPending ? "Saving…" : "Save Product"}

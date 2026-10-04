@@ -1,9 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { usePendingAction } from "@/hooks/use-pending-action";
 import { updatePassword, updateProfile } from "@/lib/actions/auth";
 import { toast } from "sonner";
 import type { Profile } from "@/types/database";
@@ -20,13 +20,13 @@ export function ProfileForm({
   profile: Profile;
   email: string | null;
 }) {
-  const [isPending, startTransition] = useTransition();
-  const [passwordPending, startPasswordTransition] = useTransition();
+  const { isPending, run } = usePendingAction();
+  const { isPending: passwordPending, run: runPassword } = usePendingAction();
 
   function handleProfileSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    startTransition(async () => {
+    run(async () => {
       const result = await updateProfile(formData);
       if (result?.success) toast.success("Profile updated");
     });
@@ -36,7 +36,7 @@ export function ProfileForm({
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
-    startPasswordTransition(async () => {
+    runPassword(async () => {
       const result = await updatePassword(formData);
       if (result?.error) {
         toast.error(result.error);
@@ -120,11 +120,7 @@ export function ProfileForm({
             />
           </StoreFormField>
           <div className="sm:col-span-2">
-            <Button
-              type="submit"
-              disabled={isPending}
-              variant="kraft"
-            >
+            <Button type="submit" loading={isPending} variant="kraft">
               {isPending ? "Saving..." : "Save changes"}
             </Button>
           </div>
@@ -182,7 +178,7 @@ export function ProfileForm({
           <div className="sm:col-span-2">
             <Button
               type="submit"
-              disabled={passwordPending}
+              loading={passwordPending}
               variant="outline"
               className="border-kraft-ink/20"
             >

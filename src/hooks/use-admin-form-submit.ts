@@ -3,6 +3,7 @@
 import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useOptionalLoading } from "@/components/providers/loading-provider";
 import {
   flattenFieldErrors,
   firstFormError,
@@ -35,6 +36,7 @@ export function useAdminFormSubmit({
   onSuccess,
 }: UseAdminFormSubmitOptions) {
   const router = useRouter();
+  const loading = useOptionalLoading();
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -43,21 +45,26 @@ export function useAdminFormSubmit({
       e.preventDefault();
       const formData = new FormData(e.currentTarget);
       prepareFormData?.(formData);
+      loading?.show();
       startTransition(async () => {
-        const result = await action(formData);
-        if (result.error) {
-          const flat =
-            typeof result.error === "string"
-              ? { _form: result.error }
-              : flattenFieldErrors(result.error);
-          setErrors(flat);
-          toast.error(firstFormError(flat) ?? failureFallback);
-          return;
+        try {
+          const result = await action(formData);
+          if (result.error) {
+            const flat =
+              typeof result.error === "string"
+                ? { _form: result.error }
+                : flattenFieldErrors(result.error);
+            setErrors(flat);
+            toast.error(firstFormError(flat) ?? failureFallback);
+            return;
+          }
+          setErrors({});
+          toast.success(successMessage);
+          onSuccess?.();
+          if (redirectTo) router.push(redirectTo);
+        } finally {
+          loading?.hide();
         }
-        setErrors({});
-        toast.success(successMessage);
-        onSuccess?.();
-        if (redirectTo) router.push(redirectTo);
       });
     },
     [
@@ -68,6 +75,7 @@ export function useAdminFormSubmit({
       failureFallback,
       onSuccess,
       router,
+      loading,
     ],
   );
 

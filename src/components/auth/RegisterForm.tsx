@@ -1,10 +1,10 @@
 "use client";
 
-import { useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { usePendingAction } from "@/hooks/use-pending-action";
 import { register } from "@/lib/actions/auth";
 import { toast } from "sonner";
 import {
@@ -15,13 +15,13 @@ import {
 const inputClass = `${storeInputClassName} bg-white shadow-[inset_0_1px_0_oklch(1_0_0/0.8)]`;
 
 export function RegisterForm() {
-  const [isPending, startTransition] = useTransition();
+  const { isPending, run } = usePendingAction();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    startTransition(async () => {
+    run(async () => {
       const result = await register(formData);
       if (result?.error) {
         const errors = Object.values(result.error).flat();
@@ -87,7 +87,7 @@ export function RegisterForm() {
           variant="kraft"
           size="cta"
           className="mt-1"
-          disabled={isPending}
+          loading={isPending}
         >
           {isPending ? "Creating account..." : "Create account"}
         </Button>
