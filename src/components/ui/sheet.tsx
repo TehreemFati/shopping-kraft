@@ -7,8 +7,29 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
-function Sheet({ ...props }: SheetPrimitive.Root.Props) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />
+function Sheet({
+  disablePointerDismissal = true,
+  onOpenChange,
+  ...props
+}: SheetPrimitive.Root.Props) {
+  return (
+    <SheetPrimitive.Root
+      data-slot="sheet"
+      disablePointerDismissal={disablePointerDismissal}
+      onOpenChange={(open, eventDetails) => {
+        // Only close via Cancel / X / explicit actions — not outside click or Escape.
+        if (
+          !open &&
+          (eventDetails.reason === "outsidePress" ||
+            eventDetails.reason === "escapeKey")
+        ) {
+          return
+        }
+        onOpenChange?.(open, eventDetails)
+      }}
+      {...props}
+    />
+  )
 }
 
 function SheetTrigger({ ...props }: SheetPrimitive.Trigger.Props) {

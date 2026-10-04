@@ -57,6 +57,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
   const [imageUrls, setImageUrls] = useState<string[]>(
     product?.product_images?.map((i) => i.url) ?? [],
   );
+  const [imageUploading, setImageUploading] = useState(false);
 
   const { errors, setErrors, isPending, onSubmit } = useAdminFormSubmit({
     action: (formData) =>
@@ -95,6 +96,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (imageUploading) return;
     const next: Record<string, string> = {};
     if (!name.trim()) next.name = "Name is required";
     if (!categoryId) next.category_id = "Select a category";
@@ -242,6 +244,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
               productId={product?.id}
               value={imageUrls}
               onChange={setImageUrls}
+              onUploadingChange={setImageUploading}
             />
           </div>
         </AdminFormSection>
@@ -256,14 +259,25 @@ export function ProductForm({ categories, product }: ProductFormProps) {
         <AdminFormActions>
           <Button
             type="submit"
-            loading={isPending}
+            loading={isPending || imageUploading}
+            disabled={imageUploading}
             variant="kraft"
           >
-            {isPending ? "Saving…" : "Save Product"}
+            {imageUploading
+              ? "Uploading image…"
+              : isPending
+                ? "Saving…"
+                : "Save Product"}
           </Button>
-          <Button variant="outline" asChild>
-            <Link href="/admin/products">Cancel</Link>
-          </Button>
+          {imageUploading || isPending ? (
+            <Button type="button" variant="outline" disabled>
+              Cancel
+            </Button>
+          ) : (
+            <Button variant="outline" asChild>
+              <Link href="/admin/products">Cancel</Link>
+            </Button>
+          )}
         </AdminFormActions>
       </form>
     </AdminFormShell>

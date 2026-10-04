@@ -19,6 +19,7 @@ import type { Banner } from "@/types/database";
 
 export function BannerForm({ banner }: { banner?: Banner }) {
   const [imageUrl, setImageUrl] = useState(banner?.image_url ?? "");
+  const [imageUploading, setImageUploading] = useState(false);
   const isEdit = Boolean(banner);
 
   const { errors, setErrors, isPending, onSubmit } = useAdminFormSubmit({
@@ -34,6 +35,7 @@ export function BannerForm({ banner }: { banner?: Banner }) {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (imageUploading) return;
     const form = e.currentTarget;
     const title = String(new FormData(form).get("title") ?? "").trim();
     const next: Record<string, string> = {};
@@ -106,6 +108,7 @@ export function BannerForm({ banner }: { banner?: Banner }) {
           <ImageUploader
             type="category"
             value={imageUrl ? [imageUrl] : []}
+            onUploadingChange={setImageUploading}
             onChange={(urls) => {
               setImageUrl(urls[0] ?? "");
               if (urls[0]) {
@@ -126,16 +129,29 @@ export function BannerForm({ banner }: { banner?: Banner }) {
         />
 
         <AdminFormActions>
-          <Button type="submit" loading={isPending} variant="kraft">
-            {isPending
-              ? "Saving…"
-              : isEdit
-                ? "Save changes"
-                : "Create banner"}
+          <Button
+            type="submit"
+            loading={isPending || imageUploading}
+            disabled={imageUploading}
+            variant="kraft"
+          >
+            {imageUploading
+              ? "Uploading image…"
+              : isPending
+                ? "Saving…"
+                : isEdit
+                  ? "Save changes"
+                  : "Create banner"}
           </Button>
-          <Button variant="outline" asChild>
-            <Link href="/admin/banners">Cancel</Link>
-          </Button>
+          {imageUploading || isPending ? (
+            <Button type="button" variant="outline" disabled>
+              Cancel
+            </Button>
+          ) : (
+            <Button variant="outline" asChild>
+              <Link href="/admin/banners">Cancel</Link>
+            </Button>
+          )}
         </AdminFormActions>
       </form>
     </AdminFormShell>

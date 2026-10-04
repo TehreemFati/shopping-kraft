@@ -51,6 +51,7 @@ export function CategoryDialog({
   const [sortOrder, setSortOrder] = useState("0");
   const [showMore, setShowMore] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [imageUploading, setImageUploading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -64,6 +65,7 @@ export function CategoryDialog({
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (imageUploading) return;
     const next: FormErrors = {};
     if (!name.trim()) next.name = "Name is required";
     if (Object.keys(next).length) {
@@ -169,6 +171,7 @@ export function CategoryDialog({
               type="category"
               value={imageUrl ? [imageUrl] : []}
               onChange={(urls) => setImageUrl(urls[0] ?? "")}
+              onUploadingChange={setImageUploading}
             />
             <p className="text-xs text-muted-foreground">
               Optional. Leave empty for a gradient placeholder on the storefront.
@@ -220,13 +223,24 @@ export function CategoryDialog({
             <Button
               type="button"
               variant="outline"
-              disabled={isPending}
+              disabled={isPending || imageUploading}
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" loading={isPending} variant="kraft">
-              {isPending ? "Saving…" : isEdit ? "Save changes" : "Create"}
+            <Button
+              type="submit"
+              loading={isPending || imageUploading}
+              disabled={imageUploading}
+              variant="kraft"
+            >
+              {imageUploading
+                ? "Uploading image…"
+                : isPending
+                  ? "Saving…"
+                  : isEdit
+                    ? "Save changes"
+                    : "Create"}
             </Button>
           </DialogFooter>
         </form>
